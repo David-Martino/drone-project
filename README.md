@@ -3,7 +3,7 @@ ELEC5550 drone project repo
 This project aims to build a drone system capable of autonomously mapping indoor or outdoor building structures in 3D using onboard sensors.
 
 
-# Push Workflow
+# Push Workflow: This is for updating the repo after you have made changes on your local machine
 cd my-repo<br>
 git status<br>
 git add .<br>
