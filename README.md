@@ -11,7 +11,7 @@ git commit -m "Add your comment"<br>
 git push
 
 # Pull Workflow: This is for updating the repo on your local machine
-git reset --hard HEAD # WARNING:This is for disregarding local uncommitted changes if you just want the latest repo <br>
+git reset --hard HEAD # WARNING: This is for disregarding local uncommitted changes if you just want the latest repo <br>
 git pull
 
 # Branch Naming
