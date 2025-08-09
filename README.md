@@ -4,10 +4,10 @@ This project aims to build a drone system capable of autonomously mapping indoor
 
 
 # Push Workflow
-cd my-repo
-git status
-git add .
-git commit -m "Add your comment"
+cd my-repo<br>
+git status<br>
+git add .<br>
+git commit -m "Add your comment"<br>
 git push
 
 
