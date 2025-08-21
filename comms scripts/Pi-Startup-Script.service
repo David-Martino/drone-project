@@ -1,24 +1,30 @@
-
-#Save here: /etc/systemd/system/Pi-Startup-Script
+# /etc/systemd/system/Pi-Startup-Script.service
 [Unit]
 Description=Pi Camera RTP Stream (GStreamer)
-After=network-online.target
 Wants=network-online.target
+After=network-online.target
 
 [Service]
 Type=simple
+User=pi
+Group=video
+# Tunables (easy to edit without touching the script)
 Environment=BASE_IP=192.168.1.50
 Environment=PORT=5004
 Environment=W=640
 Environment=H=480
 Environment=FPS=30
 Environment=BITRATE=4000000
+
+# Small delay can help if Wi‑Fi associates slowly
+ExecStartPre=/bin/sleep 3
 ExecStart=/usr/local/bin/GStreamer_Uplink_Script.sh
 Restart=always
 RestartSec=2
 
 [Install]
 WantedBy=multi-user.target
+
 
 #After Run:
 #sudo systemctl daemon-reload
