@@ -1,0 +1,31 @@
+#/etc/systemd/system/Pi-Startup-FFmpeg.service
+[Unit]
+Description=Pi Camera → FFmpeg → MPEG-TS/UDP uplink
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=pi
+Group=video
+Environment=BASE_IP=192.168.1.50
+Environment=PORT=5004
+Environment=W=1280
+Environment=H=720
+Environment=FPS=30
+Environment=BITRATE=4000000
+Environment=GOP=30
+ExecStartPre=/bin/sleep 3
+ExecStart=/usr/local/bin/ffmpeg_uplink.sh
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+
+#sudo systemctl daemon-reload
+#sudo systemctl enable --now Pi-Startup-FFmpeg.service
+#journalctl -u Pi-Startup-FFmpeg.service -f
+
+#temp turn off: sudo systemctl stop Pi-Startup-FFmpeg.service
+#start back up: sudo systemctl start Pi-Startup-FFmpeg.service
