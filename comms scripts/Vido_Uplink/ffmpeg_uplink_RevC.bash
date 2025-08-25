@@ -3,8 +3,8 @@ set -euo pipefail
 
 BASE_IP="${BASE_IP:-192.168.1.50}"
 PORT="${PORT:-5004}"
-W="${W:-1280}"
-H="${H:-720}"
+W="${W:-640}"
+H="${H:-480}"
 FPS="${FPS:-30}"
 BITRATE="${BITRATE:-4000000}"
 GOP="${GOP:-30}"

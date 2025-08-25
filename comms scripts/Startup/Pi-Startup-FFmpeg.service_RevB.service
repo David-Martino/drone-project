@@ -10,11 +10,11 @@ User=pi
 Group=video
 Environment=BASE_IP=192.168.1.50
 Environment=PORT=5004
-Environment=W=1280
-Environment=H=720
+Environment=W=640
+Environment=H=480
 Environment=FPS=30
 Environment=BITRATE=4000000
-Environment=GOP=30
+Environment=GOP=15
 ExecStartPre=/bin/sleep 3
 ExecStart=/usr/local/bin/ffmpeg_uplink.sh
 Restart=always
