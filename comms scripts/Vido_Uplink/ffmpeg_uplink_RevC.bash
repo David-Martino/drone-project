@@ -1,4 +1,4 @@
-#/usr/local/bin/ffmpeg_uplink.sh
+#!/usr/bin/env bash
 set -euo pipefail
 
 BASE_IP="${BASE_IP:-192.168.1.50}"
@@ -17,5 +17,5 @@ exec rpicam-vid --codec h264 \
 | ffmpeg -loglevel warning -re -fflags +genpts -i - -c copy -f mpegts \
   "udp://$BASE_IP:$PORT?pkt_size=1316&fifo_size=1000000&overrun_nonfatal=1"
 
-
+#/usr/local/bin/ffmpeg_uplink.sh
 #sudo chmod +x /usr/local/bin/ffmpeg_uplink.sh
