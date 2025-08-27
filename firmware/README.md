@@ -1,13 +1,13 @@
 # README
 There are two folders in the firmware folder
-- Testing: For each different function, pull a new repo of ESP-Drone into this folder and make modifications in there so that they may be unit tested. Be aware of changes that will affect other functions (eg the same Vl531 drivers are shared by the Multiranger and optical flow decks). Take note of ALL modifications made to the base firmware in the `Modifications-Register.md`.
+- Testing: For each different function, pull a new repo of ESP-Drone into this folder and make modifications in there so that they may be unit tested. Be aware of changes that will affect other functions (eg the same Vl531 drivers are shared by the Multiranger and optical flow decks). Take note of ALL modifications made to the base firmware in the `Modifications-Register.md`. If you are modifying a base firmware file comment any modifications made using the convention `// @@ <comment>`.
 - Main: This is the main build to be released on the drone. When a unit function has been tested and is working, integrate it into the esp-drone repo underneath this folder, and make sure to test it in conjunction with the other functions.
 
 The `Codebase-Notes.md` documents the reverse engineering and current understanding of the ESP-Drone codebase.
 The `Modifications-Register.md` documents any changes made to the base esp-drone or cfclient firmware.
 
 # Required Installations
-This document details the various tools needed to work on the ESP-Drone codebase. The `main` folder already has the esp-drone and cfclient repositories.
+This document details the various tools needed to work on the ESP-Drone codebase. The `main` folder already has the esp-drone and cfclient repositories. When cloning a git repository, there may be some files/folders related to git (.git, .gitignore, etc). Just delete these so they don't interfere with the main repo.
 
 ## Python
 Install python 3.10.11 (this will install pip as well, needed for CFClient)
@@ -22,8 +22,7 @@ Note:
 
 ## ESP-Drone
 The ESP-Drone repository is found here:
-https://github.com/espressif/esp-drone.git
-The firmware team is using commit `527ee2e` of the project. See `Testing Build` in `Codebase_Notes.md` to do a test build of the project.
+https://github.com/espressif/esp-drone.git. The firmware team is using commit `527ee2e` of the project. See `Testing Build` in `Codebase_Notes.md` to do a test build of the project.
 
 ## CFClient
 Note that CF GCS is actually split into two parts
@@ -37,13 +36,14 @@ From https://github.com/espressif/esp-drone/issues/84 related to the 'WIFI_UDP: 
 - CFLib (this should be automatically installed when installing CFClient): https://github.com/jobitjoseph/crazyflie-lib-python
 Installation:
 In the CFClient folder, run:
-`pip install -e .`
+```pip install -e .```
 to install CFClient (python and pip should be installed)
 
 Note: 
 This is the CFClient version that has been tested to sustain ~3mins of connection. If you have already installed the broken CFClient, it will have also have installed the wrong CFLib. Uninstall both using 
-`pip uninstall cflib cfclient`
+```pip uninstall cflib cfclient```
 and then reinstall using JobitJoseph's versions
 
 #### ESP-Drone's Fork of CFClient
-ESP-Drone forked their own version of CFClient, however there seems to be an issue with their UDP driver, causing the connection to the current version of ESP-Drone to only maintain connection for ~5 seconds, with a 'WIFI_UDP: udp packet cksum unmatched' error reported by the ESP-Drone over serial (Issue recreated both on ESP-IDFv4.4 and ESP-IDFv5.0). The link to this repository is here:
+ESP-Drone forked their own version of CFClient, however there seems to be an issue with their UDP driver, causing the connection to the current version of ESP-Drone to only maintain connection for ~5 seconds, with a 'WIFI_UDP: udp packet cksum unmatched' error reported by the ESP-Drone over serial (Issue recreated on both ESP-IDFv4.4 and ESP-IDFv5.0). The link to this repository is here:
+https://github.com/espressif/esp-drone.git
