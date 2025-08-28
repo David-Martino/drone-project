@@ -1,0 +1,19 @@
+{
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.espIdfPathWin": "c:\\Users\\Natha\\esp-idf\\esp-idf-v5.0",
+  "idf.pythonInstallPath": "C:\\Users\\Natha\\.espressif\\tools\\idf-python\\3.11.2\\python.exe",
+  "idf.openOcdConfigs": [
+    "board/esp32s3-builtin.cfg"
+  ],
+  "idf.toolsPathWin": "C:\\Users\\Natha\\.espressif",
+  "idf.customExtraVars": {
+    "IDF_TARGET": "esp32s3"
+  },
+  "idf.portWin": "COM4",
+  "files.associations": {
+    "adc_cali.h": "c",
+    "sdkconfig.h": "c",
+    "ledc.h": "c"
+  },
+  "idf.flashType": "UART"
+}
