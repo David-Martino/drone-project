@@ -22,9 +22,14 @@ While supported by ESP-Drone, there are hardware differences that must be addres
 
 ## Motor Driver
 
+### Relevant files:
+- `components/core/crazyflie/modules/src/power_distribution_stock.c`
+- `components/drivers/general/motors/motors.c`
+- stabilizer, system as well (todo)
+
 ### Modifications Log
-1. PWM Frequency
-2. PWM Duty Cycle
+1. PWM Frequency must be changed to either 1kHz, 2kHz, 4kHz, 8kHz or 12kHz. TODO: does duty cycle need to be remapped? Unknown if BLHeli ESC uses full 0%-100% duty cycle for control. Test item.
+2. BLHeli requires an arming sequence to activate. Need to have throttle be nonzero for some time, then return to zero. See ESC Testing and BLHeli manual for information. Add in an arming sequence to the standard ESP-Drone startup sequence, making sure that the systemReady semaphore is not given until the arming is complete.
 
 ## Magnetometer
 
