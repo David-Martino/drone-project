@@ -35,7 +35,8 @@ TaskHandle_t LEDTaskHandle = NULL;
 QueueHandle_t adc_queue;
 
 void ADCTask(void *arg) {
-    int potentiometer_read, potentiometer_output, old_output;
+    uint16_t potentiometer_read, potentiometer_output, old_output;
+    uint16_t dutyCalc;
 
     adc_oneshot_unit_handle_t handle = NULL;
 
@@ -71,11 +72,11 @@ void ADCTask(void *arg) {
     {
         ESP_ERROR_CHECK(adc_oneshot_read(handle, ADC_CHANNEL, &potentiometer_read));
         ESP_ERROR_CHECK(adc_cali_raw_to_voltage(adc1_cali_handle, potentiometer_read, &potentiometer_output));
-        if (potentiometer_output != old_output) {
-                old_output = potentiometer_output;
-                xQueueGenericSend(adc_queue, &potentiometer_read, portMAX_DELAY, queueSEND_TO_BACK);
-                vTaskDelay(pdMS_TO_TICKS(10));
-        }
+        dutyCalc = (potentiometer_read >> 1) + (0b11111111111); // Map to a 2048-4095 range
+        printf("%u\n",dutyCalc);
+        //old_output = potentiometer_output;
+        xQueueGenericSend(adc_queue, &dutyCalc, portMAX_DELAY, queueSEND_TO_BACK);
+        vTaskDelay(pdMS_TO_TICKS(200));
     }
     
 }
@@ -88,7 +89,7 @@ void LEDTask(void *arg) {
         .speed_mode       = LEDC_LOW_SPEED_MODE,
         .timer_num        = LEDC_TIMER,
         .duty_resolution  = LEDC_TIMER_12_BIT,
-        .freq_hz          = 12000,  // Frequency in Hertz. Set frequency at 5 kHz
+        .freq_hz          = 500,  // Frequency in Hertz. Set frequency at 5 kHz
         .clk_cfg          = LEDC_AUTO_CLK
     };
 
@@ -115,7 +116,7 @@ void LEDTask(void *arg) {
         ledc_update_duty(ledc_channel.speed_mode, ledc_channel.channel);
         read_duty = ledc_get_duty(ledc_channel.speed_mode, ledc_channel.channel);
 
-        printf("Duty: %d\n", read_duty);
+        //printf("Duty: %d\n", read_duty);
     }
 }
 
