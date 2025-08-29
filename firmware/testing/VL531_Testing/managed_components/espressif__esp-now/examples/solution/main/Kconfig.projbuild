@@ -1,0 +1,153 @@
+menu "Example Configuration"
+    choice APP_ESPNOW_SOLUTION_MODE
+        bool "ESP-NOW Mode"
+        default APP_ESPNOW_INITIATOR
+        help
+            Select the ESP-NOW Mode.
+
+        config APP_ESPNOW_INITIATOR
+            bool "Initiator Mode"
+            select APP_WIFI_PROVISION
+            help
+                Select the ESP-NOW initiator Mode.
+
+        config APP_ESPNOW_RESPONDER
+            bool "Responder Mode"
+            help
+                Select the ESP-NOW responder Mode.
+
+    endchoice
+
+    config APP_ESPNOW_QUEUE_SIZE
+        int "Size of packet buffer queue"
+        default 32
+        help
+            Default is 32. If devices of initiator and responders is more than 32, please increase 
+            this number to decrease ESP-NOW send queue fail error. For example, set 100 when the
+            number of responder devices is 100.
+
+    config APP_ESPNOW_CONTROL
+        bool "Enable ESP-NOW Control"
+        default y
+        help
+            Enable ESP-NOW control.
+
+     config APP_ESPNOW_DEBUG
+        bool "Enable ESP-NOW Debug"
+        default y
+        help
+            Enable ESP-NOW debug.
+
+   config APP_ESPNOW_OTA
+        bool "Enable ESP-NOW OTA"
+        default y
+        help
+            Enable ESP-NOW OTA.
+
+    config APP_ESPNOW_SECURITY
+        bool "Enable ESP-NOW Security"
+        default y
+        help
+            Enable ESP-NOW security.
+
+    config APP_ESPNOW_SESSION_POP
+        string "Proof of Possession"
+        default "espnow_pop"
+        depends on APP_ESPNOW_SECURITY
+        help
+            Proof of Possession (PoP) string used to authorize session and derive shared key.
+
+    config APP_POST_LOG_TO_HTTP_SERVER
+        bool "Post flash log to HTTP server"
+        default n
+        depends on APP_ESPNOW_DEBUG && APP_ESPNOW_RESPONDER
+        help
+            Post flash log to HTTP server.
+
+    config APP_FLASH_LOG_POST_URL
+        string "URL of HTTP server"
+        default "http://192.168.0.3:8070/flash_log"
+        depends on APP_POST_LOG_TO_HTTP_SERVER
+        help
+            Flash log URL of HTTP server.
+
+    config APP_WIFI_PROVISION
+        bool "Enable WiFi Provision"
+        default y
+        depends on APP_ESPNOW_INITIATOR
+        help
+            Enable WiFi provision.
+
+    menu "WiFi Provision Configuration"
+
+        choice APP_WIFI_PROVISION_TRANSPORT
+            bool "Provisioning Transport"
+            default APP_WIFI_PROVISION_TRANSPORT_SOFTAP if IDF_TARGET_ESP32S2
+            default APP_WIFI_PROVISION_TRANSPORT_BLE
+            depends on APP_WIFI_PROVISION
+            help
+                WiFi provisioning component offers both, SoftAP and BLE transports. Choose any one.
+
+            config APP_WIFI_PROVISION_TRANSPORT_BLE
+                bool "BLE"
+                select BT_ENABLED
+                depends on !IDF_TARGET_ESP32S2
+            config APP_WIFI_PROVISION_TRANSPORT_SOFTAP
+                bool "SoftAP"
+        endchoice
+
+        config APP_WIFI_PROVISION_TRANSPORT
+            int
+            default 1 if APP_WIFI_PROVISION_TRANSPORT_BLE
+            default 2 if APP_WIFI_PROVISION_TRANSPORT_SOFTAP
+
+        config APP_WIFI_PROVISION_STATUS_RESET
+            bool
+            default n
+            depends on APP_WIFI_PROVISION
+            prompt "Reset provisioned status of the device"
+            help
+                This erases the NVS to reset provisioned status of the device on every reboot.
+                Provisioned status is determined by the WiFi STA configuration, saved on the NVS.
+
+        config APP_WIFI_PROVISION_RESET_PROV_MGR_ON_FAILURE
+            bool
+            default y
+            depends on APP_WIFI_PROVISION
+            prompt "Reset provisioned credentials and state machine after session failure"
+            help
+                Enable reseting provisioned credentials and state machine after session failure.
+                This will restart the provisioning service after retries are exhausted.
+
+        config APP_WIFI_PROVISION_PROV_MGR_MAX_RETRY_CNT
+            int
+            default 5
+            prompt "Max retries before reseting provisioning state machine"
+            depends on APP_WIFI_PROVISION_RESET_PROV_MGR_ON_FAILURE
+            help
+                Set the Maximum retry to avoid reconnecting to an inexistent AP or if credentials
+                are misconfigured. Provisioned credentials are erased and internal state machine
+                is reset after this threshold is reached.
+
+        config APP_WIFI_PROVISION_SHOW_QR
+            bool "Show provisioning QR code"
+            default y
+            depends on APP_WIFI_PROVISION
+            help
+                Show the QR code for provisioning.
+
+        config APP_WIFI_PROVISION_USING_BLUEDROID
+            bool
+            depends on (BT_BLUEDROID_ENABLED && (IDF_TARGET_ESP32C2 || IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32S3)) && APP_WIFI_PROVISION
+            select BT_BLE_42_FEATURES_SUPPORTED
+            default y
+            help
+                This enables BLE 4.2 features for Bluedroid.
+    endmenu
+
+    config APP_ESPNOW_PROVISION
+        bool "Enable WiFi Provision over ESP-NOW"
+        default y
+        help
+            Enable ESP-NOW provision.
+endmenu

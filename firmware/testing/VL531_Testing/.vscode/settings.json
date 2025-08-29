@@ -1,0 +1,15 @@
+{
+  "files.associations": {
+    "espnow.h": "c",
+    "espnow_utils.h": "c",
+    "espnow_ctrl.h": "c"
+  },
+  "idf.openOcdConfigs": [
+    "board/esp32s3-builtin.cfg"
+  ],
+  "idf.customExtraVars": {
+    "IDF_TARGET": "esp32s3"
+  },
+  "idf.portWin": "COM4",
+  "idf.flashType": "UART"
+}
