@@ -1,0 +1,20 @@
+[Unit]
+Description=Ground Station UDP Beacon (auto-discovery for Pi)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/env BEACON_PORT=9000 VIDEO_PORT=5004 SERVICE_NAME=GS-H264 /usr/local/bin/gs_beacon.py
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+
+
+#/etc/systemd/system/gs-beacon.service
+#AUTO START script for GS ip beacon
+#sudo systemctl daemon-reload
+#sudo systemctl enable --now gs-beacon.service
+#journalctl -u gs-beacon.service -f
