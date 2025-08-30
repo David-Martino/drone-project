@@ -1,0 +1,37 @@
+[Unit]
+Description=Pi Camera → RTP/UDP uplink (beacon + IP fallback)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=piteam05
+Group=video
+# Discovery config:
+Environment=BEACON_PORT=9000
+Environment=DISCOVERY_TIMEOUT=20
+Environment=SERVICE_NAME=GS-H264
+# Final fallback (optional):
+Environment=BASE_IP=172.20.10.4
+# Video params:
+Environment=PORT=5004
+Environment=W=640
+Environment=H=480
+Environment=FPS=30
+Environment=BITRATE=4000000
+Environment=GOP=15
+ExecStartPre=/bin/sleep 3
+ExecStart=/usr/local/bin/ffmpeg_uplink.sh
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
++
+
+#sudo systemctl daemon-reload
+#sudo systemctl enable --now Pi-Startup-FFmpeg.service
+#journalctl -u Pi-Startup-FFmpeg.service -f
+
+#temp turn off: sudo systemctl stop Pi-Startup-FFmpeg.service
+#start back up: sudo systemctl start Pi-Startup-FFmpeg.service
