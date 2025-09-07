@@ -219,7 +219,7 @@ int motorsGetRatio(uint32_t id)
     int ratio;
     ASSERT(id < NBR_OF_MOTORS);
     ratio = motorsConvBitsTo16((uint16_t)ledc_get_duty(motors_channel[id].speed_mode, motors_channel[id].channel));
-    DEBUG_PRINTI("Out Thrust: %d\n", ratio);
+    // DEBUG_PRINTI("Out Thrust: %d\n", ratio); // @@ For debug purposes only
     return ratio;
 }
 

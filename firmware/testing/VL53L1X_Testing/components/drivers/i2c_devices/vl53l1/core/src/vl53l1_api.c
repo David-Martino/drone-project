@@ -1764,6 +1764,7 @@ VL53L1_Error VL53L1_StartMeasurement(VL53L1_DEV Dev)
 	* inter measurement period */
 	if ((Status == VL53L1_ERROR_NONE) &&
 		(DeviceMeasurementMode == VL53L1_DEVICEMEASUREMENTMODE_TIMED)) {
+		//printf("\nYIPPEE! VL531 STATUS = %d\n", Status);
 		lStatus = VL53L1_GetMeasurementTimingBudgetMicroSeconds(Dev,
 				&MTBus);
 		/* convert timing budget in ms */
@@ -1775,16 +1776,25 @@ VL53L1_Error VL53L1_StartMeasurement(VL53L1_DEV Dev)
 		if (IMPms < MTBus + TIMED_MODE_TIMING_GUARD_MILLISECONDS)
 			Status = VL53L1_ERROR_INVALID_PARAMS;
 	}
+	else // @@ DEBUG
+	{
+		// printf("\nWARNING! VL531 STATUS = %d\n", Status);
+	}
 
 	if (Status == VL53L1_ERROR_NONE)
 		Status = VL53L1_init_and_start_range(
 				Dev,
 				DeviceMeasurementMode,
 				VL53L1_DEVICECONFIGLEVEL_FULL);
+	else
+		// printf("\nVL53L1_StartMeasurement X1 STATUS = %d\n", Status); // @@ DEBUG
+		
 
 	/* Set PAL State to Running */
 	if (Status == VL53L1_ERROR_NONE)
 		VL53L1DevDataSet(Dev, PalState, VL53L1_STATE_RUNNING);
+	else // @@ DEBUG
+		// printf("\nVL53L1_StartMeasurement X2 STATUS = %d\n", Status); // @@ DEBUG
 
 
 	LOG_FUNCTION_END(Status);

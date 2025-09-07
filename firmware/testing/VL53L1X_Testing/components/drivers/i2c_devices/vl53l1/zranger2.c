@@ -54,7 +54,7 @@ static int16_t range_last = 0;
 
 static bool isInit;
 
-static VL53L1_Dev_t dev;
+static VL53L1_Dev_t dev; 
 
 static uint16_t zRanger2GetMeasurementAndRestart(VL53L1_Dev_t *dev)
 {
@@ -62,17 +62,24 @@ static uint16_t zRanger2GetMeasurementAndRestart(VL53L1_Dev_t *dev)
     VL53L1_RangingMeasurementData_t rangingData;
     uint8_t dataReady = 0;
     uint16_t range;
+    // uint8_t rangeStatus; // @@
 
+    // DEBUG_PRINTI("Getting Measurement Data Ready\n"); // @@ DEBUG
     while (dataReady == 0)
     {
         status = VL53L1_GetMeasurementDataReady(dev, &dataReady);
         vTaskDelay(M2T(1));
     }
 
+    // DEBUG_PRINTI("Getting Ranging Measurement\n"); // @@ DEBUG
     status = VL53L1_GetRangingMeasurementData(dev, &rangingData);
     range = rangingData.RangeMilliMeter;
+    // rangeStatus = rangingData.RangeStatus; // @@ 
+    // DEBUG_PRINTI("Range: %d [mm], Status: %d\n", range, rangeStatus); // @@ DEBUG
 
+    // DEBUG_PRINTI("Stopping Measurement\n"); // @@ DEBUG
     VL53L1_StopMeasurement(dev);
+    // DEBUG_PRINTI("Restarting Measurement\n"); // @@ DEBUG
     status = VL53L1_StartMeasurement(dev);
     status = status;
 
@@ -116,24 +123,31 @@ void zRanger2Task(void* arg)
 
   systemWaitStart();
 
+  DEBUG_PRINTI("zRanger finished waiting for system\n"); // @@ DEBUG
   // Restart sensor
   VL53L1_StopMeasurement(&dev);
   VL53L1_SetDistanceMode(&dev, VL53L1_DISTANCEMODE_MEDIUM);
   VL53L1_SetMeasurementTimingBudgetMicroSeconds(&dev, 25000);
+  // DEBUG_PRINTI("VL531 Restarted\n"); // @@ DEBUG
 
+  // DEBUG_PRINTI("I2C Communication speed: %d\n", dev.comms_speed_khz); // @@ DEBUG
   VL53L1_StartMeasurement(&dev);
+  DEBUG_PRINTI("VL531 Measurement Started\n"); // @@ DEBUG
+
 
   lastWakeTime = xTaskGetTickCount();
-  DEBUG_PRINTI("Starting ZRanger Loop"); // @@ MODIFICATION
-
+  DEBUG_PRINTI("Entering Loop\n"); // @@ DEBUG
   while (1) {
-    DEBUG_PRINTI("Waiting..."); // @@ MODIFIATION
+    
     vTaskDelayUntil(&lastWakeTime, M2T(25));
-    DEBUG_PRINTI("Finished waiting..."); // @@ MODIFIATION
 
+    // DEBUG_PRINTI("Getting Measurement...\n"); // @@ DEBUG
     range_last = zRanger2GetMeasurementAndRestart(&dev);
-    DEBUG_PRINTI("Range: %f", range_last); // @@ MODIFIATION
     rangeSet(rangeDown, range_last / 1000.0f);
+    // DEBUG_PRINTI("Range found, trying to queue...\n"); // @@ DEBUG
+
+
+    printf("\nZR2 DISTANCE: %d [mm]\n", range_last); // @@ so this was fucking it bc i was using %.3f instead
 
     // check if range is feasible and push into the estimator
     // the sensor should not be able to measure >5 [m], and outliers typically

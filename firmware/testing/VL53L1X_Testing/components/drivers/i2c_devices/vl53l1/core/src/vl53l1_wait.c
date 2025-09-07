@@ -400,10 +400,18 @@ VL53L1_Error VL53L1_is_new_data_ready(
 
 	/* set *pready = 1 if new range data ready complete zero otherwise */
 
+	// @@ ST didn't have guards on this if statement ??
 	if ((gpio__tio_hv_status & 0x01) == interrupt_ready)
+	{
 		*pready = 0x01;
+		//printf("VL531: GPIO_TIO_HV => Data Ready\n"); // @@ DEBUG
+	}
 	else
+	{
 		*pready = 0x00;
+		//printf("VL531: GPIO_TIO_HV => Data not Ready\n"); // @@ DEBUG
+	}
+
 
 	LOG_FUNCTION_END(status);
 

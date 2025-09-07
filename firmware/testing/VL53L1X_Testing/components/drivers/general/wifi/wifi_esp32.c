@@ -22,7 +22,7 @@
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
 #include "esp_mac.h"
 #endif
-#include <espnow.h>
+#include "espnow.h"
 #include "espnow_ctrl.h"
 #include "espnow_utils.h"
 

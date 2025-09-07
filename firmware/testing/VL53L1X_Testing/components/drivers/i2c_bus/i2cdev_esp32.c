@@ -157,7 +157,7 @@ bool i2cdevReadReg16(I2C_Dev *dev, uint8_t devAddress, uint16_t memAddress,
     i2c_master_write_byte(cmd, (devAddress << 1) | I2C_MASTER_READ, I2C_MASTER_ACK_EN);
     i2c_master_read(cmd, data, len, I2C_MASTER_LAST_NACK);
     i2c_master_stop(cmd);
-    esp_err_t err = i2c_master_cmd_begin(dev->def->i2cPort, cmd, (TickType_t)5);
+    esp_err_t err = i2c_master_cmd_begin(dev->def->i2cPort, cmd, (TickType_t)100); // @@ was 5 originally
     i2c_cmd_link_delete(cmd);
 
     xSemaphoreGive(dev->isBusFreeMutex);
@@ -189,11 +189,12 @@ bool i2cdevReadReg16(I2C_Dev *dev, uint8_t devAddress, uint16_t memAddress,
 #endif
 
     if (err == ESP_OK) {
+       //  ESP_LOGE("i2cdev", "Read Success!"); // @@
         return TRUE;
     } else {
+        // ESP_LOGE("i2cdev", "Read Failure!"); // @@
         return false;
     }
-
 }
 
 bool i2cdevWriteByte(I2C_Dev *dev, uint8_t devAddress, uint8_t memAddress,
@@ -288,6 +289,7 @@ bool i2cdevWriteReg16(I2C_Dev *dev, uint8_t devAddress, uint16_t memAddress,
                       uint16_t len, uint8_t *data)
 {
     if (xSemaphoreTake(dev->isBusFreeMutex, (TickType_t)5) == pdFALSE) {
+        printf("\ni2cdevWriteReg16: Failed to take Bus semaphore!\n"); // @@
         return false;
     }
 
@@ -302,7 +304,7 @@ bool i2cdevWriteReg16(I2C_Dev *dev, uint8_t devAddress, uint16_t memAddress,
     }
     i2c_master_write(cmd, (uint8_t *)data, len, I2C_MASTER_ACK_EN);
     i2c_master_stop(cmd);
-    esp_err_t err = i2c_master_cmd_begin(dev->def->i2cPort, cmd, (TickType_t)5);
+    esp_err_t err = i2c_master_cmd_begin(dev->def->i2cPort, cmd, (TickType_t)100); // @@
     i2c_cmd_link_delete(cmd);
 
     xSemaphoreGive(dev->isBusFreeMutex);
@@ -337,6 +339,77 @@ bool i2cdevWriteReg16(I2C_Dev *dev, uint8_t devAddress, uint16_t memAddress,
     if (err == ESP_OK) {
         return TRUE;
     } else {
+        printf("\ni2cdevWriteReg16: Semaphore acquired, but new issue!\n"); // @@ 
+        printf("[port:%d, slave:0x%X] Failed to write %d bytes to__ register 0x%X %x (or %u?), error: 0x%X\n",
+                    dev->def->i2cPort, devAddress, len, memAddress8[0],memAddress8[1],memAddress, err); // @@
         return false;
     }
 }
+
+
+// @@ courtesy of ChatGPT:
+
+// #define I2C_MAX_WRITE  32   // safe chunk size (ST usually uses 32 or 64)
+
+// bool i2cdevWriteReg16(I2C_Dev *dev, uint8_t devAddress, uint16_t memAddress,
+//                       uint16_t len, uint8_t *data)
+// {
+//     if (xSemaphoreTake(dev->isBusFreeMutex, pdMS_TO_TICKS(5)) == pdFALSE) {
+//         ESP_LOGE("i2cdev", "Failed to take Bus semaphore");
+//         return false;
+//     }
+
+//     esp_err_t err = ESP_OK;
+//     uint16_t offset = 0;
+
+//     while (offset < len) {
+//         uint16_t chunk_len = (len - offset > I2C_MAX_WRITE) ? I2C_MAX_WRITE : (len - offset);
+
+//         uint8_t memAddress8[2] = {
+//             (uint8_t)((memAddress >> 8) & 0xFF),
+//             (uint8_t)(memAddress & 0xFF)
+//         }; // @@ this seems a bit sus...
+
+//         i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+//         i2c_master_start(cmd);
+//         i2c_master_write_byte(cmd, (devAddress << 1) | I2C_MASTER_WRITE, true);
+//         i2c_master_write(cmd, memAddress8, 2, true);
+//         i2c_master_write(cmd, data + offset, chunk_len, true);
+//         i2c_master_stop(cmd);
+//         err = i2c_master_cmd_begin(dev->def->i2cPort, cmd, pdMS_TO_TICKS(200)); // @@ originally 5
+//         i2c_cmd_link_delete(cmd);
+
+//         if (err != ESP_OK) break;
+
+//         offset += chunk_len;
+//         memAddress += chunk_len;  // increment register address
+
+//         vTaskDelay(pdMS_TO_TICKS(2)); // @@ small delay between chunks for stability
+//         // ESP_LOGI("i2cdev", "%d: 0x%x into 0x%x%x",offset, *(data + offset), memAddress8[0], memAddress8[1]); // @@
+//     }
+
+//     xSemaphoreGive(dev->isBusFreeMutex);
+
+//     if (err != ESP_OK) {
+//         //ESP_LOGE("i2cdev", "Writing into register 0x%x%x failed at offset %d (chunk %d): err=0x%x", memAddress8[0], memAddress8[1], offset, len, err);
+//         // ESP_LOGE("i2cdev", "Writing Fail"); // @@
+//         return false;
+//     }
+//     else {
+//         // ESP_LOGE("i2cdev", "Success!"); @@
+//          //ESP_LOGE("i2cdev", "Write successful! Into register 0x%x%x", memAddress8[0], memAddress8[1]);
+//     }
+//     // DEBUGGING NOTES:
+//     // It succeeds a few times before failing. Interestingly, it seems to be independent of the data, since 
+//     // I can see the same message being successfully sent as is in the failed message - the fail message always
+//     // seems to be 0x3fcd0280
+//     // ChatGPT thinks it may be signal integrity / timing issue but I think it might just be to do with the device state = maybe its expected behaviour?
+//     // Only reading -0.000mm
+//     // may need to reverse eng the packets? ** check which command is publishing them, hopefully that will have information on what they are
+//     // then can figure out what 0x3fcd0280 means
+
+//     // could also try putting proper 10k pullups on i2c or wiring it differently but the distance is very short so eh..  
+
+
+//     return true;
+// }

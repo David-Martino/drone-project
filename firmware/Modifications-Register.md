@@ -10,13 +10,13 @@ Disabling because these are unused (free some memory)
 ### Pinout
 ESPDrone Config > sensors config:
 (11) I2C0_PIN_SDA GPIO number
-(10) I2C0_PIN_SCL GPIO number
+(13) I2C0_PIN_SCL GPIO number
 (40) I2C1_PIN_SDA GPIO number
 (41) I2C1_PIN_SCL GPIO number
 (37) SPI_PIN_MISO GPIO number
 (35) SPI_PIN_MOSI GPIO number
 (36) SPI_PIN_CLK GPIO number
-(18) SPI_PIN_CS0 GPIO number
+(10) SPI_PIN_CS0 GPIO number
 (12) MPU_PIN_INT GPIO number
 (2) EXT01_PIN GPIO number -- this actually becomes ADC1_PIN (i.e. BAT_ADC)
 (34) EXT01_PIN GPIO number -- what does this do?
@@ -39,16 +39,16 @@ ESPDrone Config > motors config:
 ## MultiRanger
 
 ## Optical Flow Deck
-While supported by ESP-Drone, there are hardware differences that must be addressed.
-### Notes
-- To Test: In `vl531.h`, the default address is defined as 0b0101001 (0x29, and note that only 7 bits were used), however the datasheet states that the default is 0b01010010 (0x52, note that the difference is just the extra 0 at the end - VL531 receives in big endian though (MSB arrives first)). Despite this, the inita; connection was confirmed as OKAY on I2C1 but then it got stuck trying to read data. Test with 0x52 to see effect.
+While supported by ESP-Drone, there are hardware differences that must be addressed. Currently, VL531LX is working. Will require manufactured optical flow deck to test PMW3901.
 
 ### Relevant files:
 - `components/drivers/i2c_devices/vl531/include/vl531.h`
 - `components/drivers/i2c_devices/vl531/include/vl531.c`
+- `components/drivers/i2c_bus/i2cdev_esp32.c`
 
 ### Modifications Log
 1. In `vl531.h`: Comment out the line `#define USE_I2C_2V8`
+2. In `i2cdev_esp32.c`: In functions i2cdevWriteReg16 and i2cdevReadReg16, increase the ticks to weight until the bus is able to handle the speeds. May also need to adjust this in i2cdevWriteReg8 and i2cdevReadReg8, but was not necessary during testing. The testing script increased the value from 5 to 100, but this may need adjustment. 
 
 ## Motor Driver
 motors.c is the only modified file in this. The Timer frequency is set to 500Hz. The functions motorsConv16ToBits(.) and motorsConvBitsTo16(.) were already defned in CrazyFlie for some of their own mapping. These have been modified to map down to a range allowing for 1ms-2ms (assuming f=500Hz).

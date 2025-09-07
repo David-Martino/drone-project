@@ -1,9 +1,4 @@
 {
-  "files.associations": {
-    "espnow.h": "c",
-    "espnow_utils.h": "c",
-    "espnow_ctrl.h": "c"
-  },
   "idf.openOcdConfigs": [
     "board/esp32s3-builtin.cfg"
   ],

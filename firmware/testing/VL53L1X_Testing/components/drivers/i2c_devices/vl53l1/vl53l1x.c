@@ -73,11 +73,11 @@ bool vl53l1xInit(VL53L1_Dev_t *pdev, I2C_Dev *I2cHandle)
   uint8_t byteData;
   uint16_t wordData;
   VL53L1_RdByte(pdev, 0x010F, &byteData);
-  DEBUG_PRINTI( "VL53L1X Model_ID: %02X\n\r", byteData); //@@ REMOVE I
+  DEBUG_PRINT( "VL53L1X Model_ID: %02X\n\r", byteData);
   VL53L1_RdByte(pdev, 0x0110, &byteData);
-  DEBUG_PRINTI( "VL53L1X Module_Type: %02X\n\r", byteData); //@@ REMOVE I
+  DEBUG_PRINT( "VL53L1X Module_Type: %02X\n\r", byteData);
   VL53L1_RdWord(pdev, 0x010F, &wordData);
-  DEBUG_PRINTI( "VL53L1X: %02X\n\r", wordData); //@@ REMOVE I
+  DEBUG_PRINT( "VL53L1X: %02X\n\r", wordData);
 
   status = VL53L1_WaitDeviceBooted(pdev);
   if (status == VL53L1_ERROR_NONE)
@@ -86,7 +86,6 @@ bool vl53l1xInit(VL53L1_Dev_t *pdev, I2C_Dev *I2cHandle)
 
 	if (status == VL53L1_ERROR_NONE)
 	{
-		DEBUG_PRINTI("STILL NO ERRORS!"); // @@ MODIFICATION
 		status = VL53L1_StaticInit(pdev);
 	}
   }
@@ -145,6 +144,13 @@ VL53L1_Error VL53L1_WriteMulti(
 	uint32_t      count)
 {
 	VL53L1_Error status         = VL53L1_ERROR_NONE;
+
+	// @@
+	// 8_t pdev->I2cDevAddr @@
+	// 16_t pdev->comms_speed_khz
+	//printf("I2cDevAddr: %x\n", pdev->I2cDevAddr);
+	//printf("comms_speed_khz: %d\n", pdev->comms_speed_khz);
+
 
   if (!i2cdevWrite16(pdev->I2Cx, pdev->I2cDevAddr, index, count, pdata))
   {

@@ -43,7 +43,7 @@ extern "C"
 #define VL53L1X_DEFAULT_ADDRESS 0b0101001
 #define VL53L1X_ID			0xEACC
 
-// #define USE_I2C_2V8 // @@ MODIFICATION - MUST DISABLE THIS FOR ESP DRON
+// #define USE_I2C_2V8 // @@ modification
 
 /**
  * @file   vl53l1_platform.h

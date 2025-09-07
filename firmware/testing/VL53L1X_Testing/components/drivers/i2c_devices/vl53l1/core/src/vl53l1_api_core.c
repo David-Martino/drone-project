@@ -1885,7 +1885,7 @@ VL53L1_Error VL53L1_set_vhv_config(
 }
 
 
-
+// @@ The error is occurring in here
 VL53L1_Error VL53L1_init_and_start_range(
 	VL53L1_DEV                     Dev,
 	uint8_t                        measurement_mode,
@@ -2044,6 +2044,8 @@ VL53L1_Error VL53L1_init_and_start_range(
 				VL53L1_STATIC_NVM_MANAGED_I2C_SIZE_BYTES,
 				&buffer[i2c_buffer_offset_bytes]);
 	}
+	
+	// printf("Status at Marker 1: %d\n", status); // @@ DEBUG
 
 	if (device_config_level >= VL53L1_DEVICECONFIGLEVEL_CUSTOMER_ONWARDS &&
 		status == VL53L1_ERROR_NONE) {
@@ -2057,6 +2059,7 @@ VL53L1_Error VL53L1_init_and_start_range(
 				VL53L1_CUSTOMER_NVM_MANAGED_I2C_SIZE_BYTES,
 				&buffer[i2c_buffer_offset_bytes]);
 	}
+	// printf("Status at Marker 2: %d\n", status); // @@ DEBUG
 
 	if (device_config_level >= VL53L1_DEVICECONFIGLEVEL_STATIC_ONWARDS &&
 		status == VL53L1_ERROR_NONE) {
@@ -2070,6 +2073,7 @@ VL53L1_Error VL53L1_init_and_start_range(
 				VL53L1_STATIC_CONFIG_I2C_SIZE_BYTES,
 				&buffer[i2c_buffer_offset_bytes]);
 	}
+	// printf("Status at Marker 3: %d\n", status); // @@ DEBUG
 
 	if (device_config_level >= VL53L1_DEVICECONFIGLEVEL_GENERAL_ONWARDS &&
 		status == VL53L1_ERROR_NONE) {
@@ -2083,6 +2087,8 @@ VL53L1_Error VL53L1_init_and_start_range(
 				VL53L1_GENERAL_CONFIG_I2C_SIZE_BYTES,
 				&buffer[i2c_buffer_offset_bytes]);
 	}
+	// printf("Status at Marker 4: %d\n", status); // @@ DEBUG
+
 
 	if (device_config_level >= VL53L1_DEVICECONFIGLEVEL_TIMING_ONWARDS &&
 		status == VL53L1_ERROR_NONE) {
@@ -2096,6 +2102,7 @@ VL53L1_Error VL53L1_init_and_start_range(
 				VL53L1_TIMING_CONFIG_I2C_SIZE_BYTES,
 				&buffer[i2c_buffer_offset_bytes]);
 	}
+	// printf("Status at Marker 5: %d\n", status); // @@ DEBUG
 
 	if (device_config_level >= VL53L1_DEVICECONFIGLEVEL_DYNAMIC_ONWARDS &&
 		status == VL53L1_ERROR_NONE) {
@@ -2117,7 +2124,7 @@ VL53L1_Error VL53L1_init_and_start_range(
 				VL53L1_DYNAMIC_CONFIG_I2C_SIZE_BYTES,
 				&buffer[i2c_buffer_offset_bytes]);
 	}
-
+	// printf("Status at Marker 6: %d\n", status); // @@ DEBUG
 	if (status == VL53L1_ERROR_NONE) {
 
 		i2c_buffer_offset_bytes = \
@@ -2129,9 +2136,11 @@ VL53L1_Error VL53L1_init_and_start_range(
 				VL53L1_SYSTEM_CONTROL_I2C_SIZE_BYTES,
 				&buffer[i2c_buffer_offset_bytes]);
 	}
+	// printf("Status at Marker 7: %d\n", status);
 
 	/* Send I2C Buffer */
 
+	// @@ THIS IS WHERE THE ERROR IS OCCURRING
 	if (status == VL53L1_ERROR_NONE) {
 		status =
 			VL53L1_WriteMulti(
@@ -2140,16 +2149,17 @@ VL53L1_Error VL53L1_init_and_start_range(
 				buffer,
 				(uint32_t)i2c_buffer_size_bytes);
 	}
+	// printf("Status at Marker 8: %d\n", status); // @@ DEBUG
 
 	/*
 	 * Update LL Driver State
 	 */
 	if (status == VL53L1_ERROR_NONE)
 		status = VL53L1_update_ll_driver_rd_state(Dev);
-
+	// printf("Status at Marker 9: %d\n", status); // @@ DEBUG
 	if (status == VL53L1_ERROR_NONE)
 		status = VL53L1_update_ll_driver_cfg_state(Dev);
-
+	// printf("Status at Marker 10: %d\n", status); // @@ DEBUG
 	LOG_FUNCTION_END(status);
 
 	return status;

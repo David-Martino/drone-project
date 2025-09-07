@@ -255,8 +255,9 @@ static void sensorsTask(void *param)
     DEBUG_PRINTD("xTaskCreate sensorsTask SetupSlave done");
 
     while (1) {
+
         /* mpu6050 interrupt trigger: data is ready to be read */
-        if (pdTRUE == xSemaphoreTake(sensorsDataReady, portMAX_DELAY)) { // @@ IT IS GETTING STUCK WAITING FOR SEMAPHORE
+        if (pdTRUE == xSemaphoreTake(sensorsDataReady, portMAX_DELAY)) {
             sensorData.interruptTimestamp = imuIntTimestamp;
 
             /* sensors step 1-read data from I2C */
@@ -339,6 +340,7 @@ void processMagnetometerMeasurements(const uint8_t *buffer)
 void processAccGyroMeasurements(const uint8_t *buffer)
 {
     /*  Note the ordering to correct the rotated 90º IMU coordinate system */
+
     Axis3f accScaled;
 
 #ifdef CONFIG_TARGET_ESPLANE_V1
@@ -665,7 +667,7 @@ static void sensorsInterruptInit(void)
     //hook isr handler for specific gpio pin
     gpio_isr_handler_add(GPIO_INTA_MPU6050_IO, sensors_inta_isr_handler, (void *)GPIO_INTA_MPU6050_IO);
     //portENABLE_INTERRUPTS();
-    DEBUG_PRINTI("sensorsInterruptInit done \n"); // @@ modification
+    DEBUG_PRINTD("sensorsInterruptInit done \n");
 
     //   FSYNC "shall not be floating, must be set high or low by the MCU"
 
@@ -803,6 +805,7 @@ static bool processGyroBiasNoBuffer(int16_t gx, int16_t gy, int16_t gz, Axis3f *
 static bool processGyroBias(int16_t gx, int16_t gy, int16_t gz, Axis3f *gyroBiasOut)
 {
     sensorsAddBiasValue(&gyroBiasRunning, gx, gy, gz);
+
     if (!gyroBiasRunning.isBiasValueFound) {
         sensorsFindBiasValue(&gyroBiasRunning);
 
