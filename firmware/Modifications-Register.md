@@ -58,13 +58,49 @@ The BLHeli ESC seems to arm as normal on power-on, although I have not written a
 ### Relevant files:
 - `components/core/crazyflie/modules/src/power_distribution_stock.c`
 - `components/drivers/general/motors/motors.c`
+- `components/core/crazyflie/modules/src/system.c`
 
 ### Modifications Log
 1. In motorsConv16ToBits(uint16_t bits), replace the return line with `return (bits >> (16 - MOTORS_PWM_BITS + 1)) + (1 << (MOTORS_PWM_BITS-1))`. This maps a thrust value into the PWM duty cycle range (1ms-2ms).
 2. In motorsConvBitsTo16(uint16_t bits), replace the return line with return `(bits - (1 << (MOTORS_PWM_BITS-1))) << (16 - MOTORS_PWM_BITS + 1);`. This maps the PWM duty ratio bits back into the thrust bits (16 bit).
 3. In pwm_timmer_init(), in the `ledc_timer` struct, set `freq_hz` to be 500.
 4. (shouldn't be required) in motorsBeep(..), set `freq_hz` to 500.
+5. In system.c, add this public function (and declare it in system.h):
+```c
+void systemSetMotorsLow(void)
+{
+    // @@ Set motor pins to be low during initialisation.
+
+  gpio_config_t io_conf = {
+      .pin_bit_mask = (1ULL<<CONFIG_MOTOR01_PIN) | (1ULL<<CONFIG_MOTOR02_PIN) | (1ULL<<CONFIG_MOTOR03_PIN) | (1ULL<<CONFIG_MOTOR04_PIN), // @@ change 6 to whatever motor pin is
+      .mode = GPIO_MODE_OUTPUT, 
+      .pull_up_en = GPIO_PULLUP_DISABLE,
+      .pull_down_en = GPIO_PULLDOWN_ENABLE,
+      .intr_type = GPIO_INTR_DISABLE,
+  };
+
+  gpio_config(&io_conf);
+  gpio_set_level(CONFIG_MOTOR01_PIN, 0);
+  gpio_set_level(CONFIG_MOTOR02_PIN, 0);
+  gpio_set_level(CONFIG_MOTOR03_PIN, 0);
+  gpio_set_level(CONFIG_MOTOR04_PIN, 0);
+}
+```
+6. In main.c, call `systemSetMotorsLow()` in app_main(). It MUST be the first function called.
 
 
-## Magnetometer
+## Power Management
+Configuring the power management to read a 2S battery. NOTE that in testing, these changes have been integrated with the BLHeli_Driver folder rather than a separate power management folder.
+
+### Relevant files
+- `components/core/crazyflie/hal/interface/pm_esplane.c`
+- `components/core/crazyflie/hal/interface/pm_esplane.c`
+
+### Modifications Log
+1. TODO: In pm_esplane.c, bat671723HS25C holds an LUT for mapping battery voltage->percentage. This must be updated with the battery discharge curve.
+2. In pm_esplane.c, function pmInit() calls pmEnableExtBatteryVoltMeasuring(CONFIG_ADC1_PIN, xx). Change xx to 4. xx is the multiplier that corrects for our 4:1 voltage divider on the ADC input.
+3. In pm_esplane.c, function pmInit() sets pmSyslinkInfo.vBat = 3.7f. Change this to 7.4f -- not actually sure what this does, may just be for logging
+4. In pm_esplane.h, set PM_BAT_LOW_VOLTAGE  to 6.4f (original 3.2f)
+5. In pm_esplane.h, set PM_BAT_CRITICAL_LOW_VOLTAGE to 6.0f (original 3.0f)
+
 

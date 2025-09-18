@@ -33,12 +33,16 @@
 #define DEBUG_MODULE "APP_MAIN"
 #include "debug_cf.h"
 
+
 void app_main()
 {
     /*
     * Initialize the platform and Launch the system task
     * app_main will initialize and start everything
     */
+
+    // @@ SET MOTOR PINS LOW DURING BOOT
+    systemSetMotorsLow();
 
     /* initialize nvs flash prepare for Wi-Fi */
     esp_err_t ret = nvs_flash_init();

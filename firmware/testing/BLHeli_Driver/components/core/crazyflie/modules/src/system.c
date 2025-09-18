@@ -101,6 +101,26 @@ void systemLaunch(void)
   STATIC_MEM_TASK_CREATE(systemTask, systemTask, SYSTEM_TASK_NAME, NULL, SYSTEM_TASK_PRI);
 }
 
+// @@ custom function. Has to be the first thing called during Main.
+void systemSetMotorsLow(void)
+{
+    // @@ Set motor pins to be low during initialisation.
+
+  gpio_config_t io_conf = {
+      .pin_bit_mask = (1ULL<<CONFIG_MOTOR01_PIN) | (1ULL<<CONFIG_MOTOR02_PIN) | (1ULL<<CONFIG_MOTOR03_PIN) | (1ULL<<CONFIG_MOTOR04_PIN), // @@ change 6 to whatever motor pin is
+      .mode = GPIO_MODE_OUTPUT, 
+      .pull_up_en = GPIO_PULLUP_DISABLE,
+      .pull_down_en = GPIO_PULLDOWN_ENABLE,
+      .intr_type = GPIO_INTR_DISABLE,
+  };
+
+  gpio_config(&io_conf);
+  gpio_set_level(CONFIG_MOTOR01_PIN, 0);
+  gpio_set_level(CONFIG_MOTOR02_PIN, 0);
+  gpio_set_level(CONFIG_MOTOR03_PIN, 0);
+  gpio_set_level(CONFIG_MOTOR04_PIN, 0);
+}
+
 // This must be the first module to be initialized!
 void systemInit(void)
 {

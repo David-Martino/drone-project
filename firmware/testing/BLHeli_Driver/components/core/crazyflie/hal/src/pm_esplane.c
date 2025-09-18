@@ -95,6 +95,8 @@ static uint8_t batteryLevel;
 
 static void pmSetBatteryVoltage(float voltage);
 
+
+// @@ TODO: Need to get discharge curve of our battery at constant load to reproduce this.
 const static float bat671723HS25C[10] =
 {
   3.00, // 00%
@@ -117,11 +119,13 @@ void pmInit(void)
     return;
   }
 
-    pmEnableExtBatteryVoltMeasuring(CONFIG_ADC1_PIN, 2); // ADC1 PIN is fixed to ADC channel
+    // @@ second argument is the battery adc multiplier to correct for the divider.
+    // @@ Our Vdivider is 4:1 so the multiplier is 4.
+    pmEnableExtBatteryVoltMeasuring(CONFIG_ADC1_PIN, 4); // ADC1 PIN is fixed to ADC channel // @@ modified from 2 to 4
 
     pmSyslinkInfo.pgood = false;
     pmSyslinkInfo.chg = false;
-    pmSyslinkInfo.vBat = 3.7f;
+    pmSyslinkInfo.vBat = 7.4f;// @@ Original: 3.7f;
     pmSetBatteryVoltage(pmSyslinkInfo.vBat);
 
     STATIC_MEM_TASK_CREATE(pmTask, pmTask, PM_TASK_NAME, NULL, PM_TASK_PRI);
@@ -139,7 +143,7 @@ bool pmTest(void)
  */
 static void pmSetBatteryVoltage(float voltage)
 {
-  batteryVoltage = voltage;
+  batteryVoltage = voltage; // @@ you are LITERALLY not doing anything oh my lord.
   batteryVoltageMV = (uint16_t)(voltage * 1000);
   if (batteryVoltageMax < voltage)
   {
@@ -224,7 +228,7 @@ PMStates pmUpdateState()
   bool isPgood = pmSyslinkInfo.pgood;
   uint32_t batteryLowTime;
 
-  batteryLowTime = xTaskGetTickCount() - batteryLowTimeStamp;
+  batteryLowTime = xTaskGetTickCount() - batteryLowTimeStamp; // @@ batteryLowTimeStamp stops updating if battery is below threshold
 
   if (isPgood && !isCharging)
   {
@@ -332,7 +336,7 @@ void pmTask(void *param)
   vTaskDelay(M2T(100));
   extBatteryVoltage = pmMeasureExtBatteryVoltage();
   extBatteryVoltageMV = (uint16_t)(extBatteryVoltage * 1000);
-  extBatteryCurrent = pmMeasureExtBatteryCurrent();
+  extBatteryCurrent = pmMeasureExtBatteryCurrent(); // @@ skipped because pmEnableExtBatteryCurrMeasuring() is never called.
   pmSetBatteryVoltage(extBatteryVoltage);
   batteryLevel = pmBatteryChargeFromVoltage(pmGetBatteryVoltage()) * 10;
 #ifdef DEBUG_EP2

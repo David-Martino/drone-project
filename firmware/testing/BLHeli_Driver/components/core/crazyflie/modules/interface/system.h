@@ -30,6 +30,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+void systemSetMotorsLow(void); // @@ custom function. Has to be the first thing called during Main.
+
 void systemInit(void);
 bool systemTest(void);
 

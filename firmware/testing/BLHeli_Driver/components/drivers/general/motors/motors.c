@@ -223,6 +223,7 @@ int motorsGetRatio(uint32_t id)
     return ratio;
 }
 
+
 void motorsBeep(int id, bool enable, uint16_t frequency, uint16_t ratio)
 {
     uint32_t freq_hz = 500; // @@ Changed to 500Hz, although shouldn't matter because this is set to 'frequency' below. CF Default here is 15000Hz
