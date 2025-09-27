@@ -83,6 +83,7 @@ float half2single(uint16_t number)
 /*****************************************************************************/
 
 uint16_t limitUint16(int32_t value)
+// @@ This is crazyflies original Thrust limiter... They just clip off the the thrust above rather than linearly remap
 {
   if(value > UINT16_MAX)
   {

@@ -69,14 +69,22 @@ if __name__ == '__main__':
     # Initialize low-level dri
     cflib.crtp.init_drivers()
 
-    lg_stab = LogConfig(name='Stabilizer', period_in_ms=10)
-    lg_stab.add_variable('stabilizer.roll', 'float')
-    lg_stab.add_variable('stabilizer.pitch', 'float')
-    lg_stab.add_variable('stabilizer.yaw', 'float')
+    #lg_stab = LogConfig(name='Stabilizer', period_in_ms=10)
+    #lg_stab.add_variable('stabilizer.roll', 'float')
+    #lg_stab.add_variable('stabilizer.pitch', 'float')
+    #lg_stab.add_variable('stabilizer.yaw', 'float')
+
+    lg_range = LogConfig(name='Range', period_in_ms=10)
+    lg_range.add_variable('range.front', 'int16_t')
+    lg_range.add_variable('range.left', 'int16_t')
+    lg_range.add_variable('range.right', 'int16_t')
+    lg_range.add_variable('range.back', 'int16_t')
+    lg_range.add_variable('range.up', 'int16_t')
+    lg_range.add_variable('range.zrange', 'int16_t')
 
     group = "stabilizer"
     name = "estimator"
 
     with SyncCrazyflie(uri, cf=Crazyflie(rw_cache='./cache')) as scf:
 
-        simple_param_async(scf, group, name)
+        simple_log(scf, lg_range)

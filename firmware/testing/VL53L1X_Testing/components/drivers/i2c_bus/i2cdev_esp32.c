@@ -157,7 +157,7 @@ bool i2cdevReadReg16(I2C_Dev *dev, uint8_t devAddress, uint16_t memAddress,
     i2c_master_write_byte(cmd, (devAddress << 1) | I2C_MASTER_READ, I2C_MASTER_ACK_EN);
     i2c_master_read(cmd, data, len, I2C_MASTER_LAST_NACK);
     i2c_master_stop(cmd);
-    esp_err_t err = i2c_master_cmd_begin(dev->def->i2cPort, cmd, (TickType_t)100); // @@ was 5 originally
+    esp_err_t err = i2c_master_cmd_begin(dev->def->i2cPort, cmd, (TickType_t)200); // @@ was 5 originally
     i2c_cmd_link_delete(cmd);
 
     xSemaphoreGive(dev->isBusFreeMutex);

@@ -33,6 +33,18 @@
 
 #define DEBUG_MODULE "MR"
 
+// @@ for debugging nicer.
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
+#define BYTE_TO_BINARY(byte)  \
+  ((byte) & 0x80 ? '1' : '0'), \
+  ((byte) & 0x40 ? '1' : '0'), \
+  ((byte) & 0x20 ? '1' : '0'), \
+  ((byte) & 0x10 ? '1' : '0'), \
+  ((byte) & 0x08 ? '1' : '0'), \
+  ((byte) & 0x04 ? '1' : '0'), \
+  ((byte) & 0x02 ? '1' : '0'), \
+  ((byte) & 0x01 ? '1' : '0')
+
 #include "system.h"
 #include "debug_cf.h" // @@ originally just debug.h
 #include "log.h"
@@ -68,11 +80,19 @@ NO_DMA_CCM_SAFE_ZERO_INIT static VL53L1_Dev_t devRight;
 static bool mrInitSensor(VL53L1_Dev_t *pdev, uint32_t pca95pin, char *name)
 {
     bool status;
+    uint8_t xshut_pins; // @@
 
     // Bring up VL53 by releasing XSHUT
     pca95x4SetOutput(PCA95X4_DEFAULT_ADDRESS, pca95pin);
+
+    // @@ Check that the output reg is as intended:
+    xshut_pins = pca95x4GetOutput(PCA95X4_DEFAULT_ADDRESS);
+    //DEBUG_PRINTI("Requested outputs: 0x%x", pca95pin); @@
+    //DEBUG_PRINTI("XSHUT UNSTRUCTURED: 0x%x", xshut_pins); @@
+    DEBUG_PRINTI("UP: %d BACK: %d RIGHT: %d FRONT: %d LEFT: %d", 0x01 & (xshut_pins >> 0), 0x01 & (xshut_pins >> 1), 0x01 & (xshut_pins >> 2),0x01 & (xshut_pins >> 4), 0x01 & (xshut_pins >> 6));
+
     // Let VL53 boot
-    vTaskDelay(M2T(2));
+    vTaskDelay(M2T(2)); 
     // Init VL53
     if (vl53l1xInit(pdev, I2C1_DEV))
     {
@@ -110,11 +130,13 @@ static uint16_t mrGetMeasurementAndRestart(VL53L1_Dev_t *dev)
     else
     {
         range = 32767;
+        //printf("%d\n", rangingData.RangeStatus); // @@
     }
 
     VL53L1_StopMeasurement(dev);
     status = VL53L1_StartMeasurement(dev);
     status = status;
+    //DEBUG_PRINTI("Measurement Status: %d", status); // @@
 
     return range;
 }
@@ -125,17 +147,27 @@ static void mrTask(void *param)
 
     systemWaitStart();
 
+    
     // Restart all sensors
     status = VL53L1_StopMeasurement(&devFront);
+    DEBUG_PRINTI("Measurement Status: %d", status); // @@
     status = VL53L1_StartMeasurement(&devFront);
+    DEBUG_PRINTI("Measurement Status: %d", status); // @@
     status = VL53L1_StopMeasurement(&devBack);
+    DEBUG_PRINTI("Measurement Status: %d", status); // @@
     status = VL53L1_StartMeasurement(&devBack);
+    i2c_scan(I2C1_DEV);
+    DEBUG_PRINTI("Measurement Status: %d", status); // @@
     status = VL53L1_StopMeasurement(&devUp);
+    DEBUG_PRINTI("Measurement Status: %d", status); // @@
     status = VL53L1_StartMeasurement(&devUp);
-    status = VL53L1_StopMeasurement(&devLeft);
-    status = VL53L1_StartMeasurement(&devLeft);
-    status = VL53L1_StopMeasurement(&devRight);
-    status = VL53L1_StartMeasurement(&devRight);
+    DEBUG_PRINTI("Measurement Status: %d", status); // @@
+    // status = VL53L1_StopMeasurement(&devLeft); 
+    // status = VL53L1_StartMeasurement(&devLeft);
+    // status = VL53L1_StopMeasurement(&devRight);
+    // status = VL53L1_StartMeasurement(&devRight);
+    i2c_scan(I2C1_DEV);
+
     status = status;
 
     TickType_t lastWakeTime = xTaskGetTickCount();
@@ -150,8 +182,10 @@ static void mrTask(void *param)
         rangeSet(rangeFront, mrGetMeasurementAndRestart(&devFront) / 1000.0f);
         rangeSet(rangeBack, mrGetMeasurementAndRestart(&devBack) / 1000.0f);
         rangeSet(rangeUp, mrGetMeasurementAndRestart(&devUp) / 1000.0f);
-        rangeSet(rangeLeft, mrGetMeasurementAndRestart(&devLeft) / 1000.0f);
-        rangeSet(rangeRight, mrGetMeasurementAndRestart(&devRight) / 1000.0f);
+        //rangeSet(rangeLeft, mrGetMeasurementAndRestart(&devLeft) / 1000.0f);
+        //rangeSet(rangeRight, mrGetMeasurementAndRestart(&devRight) / 1000.0f);
+        
+        //DEBUG_PRINTI("Range Front: %d", rangeGet(rangeFront));
     }
 }
 
@@ -165,24 +199,36 @@ void mrInit()
 
     pca95x4Init();
 
-    pca95x4ConfigOutput(PCA95X4_DEFAULT_ADDRESS,
-                        ~(MR_PIN_UP |
-                          MR_PIN_RIGHT |
-                          MR_PIN_LEFT |
-                          MR_PIN_FRONT |
-                          MR_PIN_BACK));
+    // @@ this defines all the USED pins as outputs
+    // pca95x4ConfigOutput(PCA95X4_DEFAULT_ADDRESS,
+    //                     ~(MR_PIN_UP |
+    //                       MR_PIN_RIGHT |
+    //                       MR_PIN_LEFT |
+    //                       MR_PIN_FRONT |
+    //                       MR_PIN_BACK));
 
-    pca95x4ClearOutput(PCA95X4_DEFAULT_ADDRESS,
-                       MR_PIN_UP |
-                       MR_PIN_RIGHT |
-                       MR_PIN_LEFT |
-                       MR_PIN_FRONT |
-                       MR_PIN_BACK);
+    pca95x4ConfigOutput(PCA95X4_DEFAULT_ADDRESS, 0x00); // @@ makes ALL pins outputs
 
+    // @@ 
+    // pca95x4ClearOutput(PCA95X4_DEFAULT_ADDRESS,
+    //                    MR_PIN_UP |
+    //                    MR_PIN_RIGHT |
+    //                    MR_PIN_LEFT |
+    //                    MR_PIN_FRONT |
+    //                    MR_PIN_BACK);
+    pca95x4ClearOutput(PCA95X4_DEFAULT_ADDRESS, 0xff); // @@ makes ALL pins low
+
+    rangeSet(rangeFront, 1000 / 1000.0f);
+    rangeSet(rangeBack, 1000 / 1000.0f);
+    rangeSet(rangeUp, 1000 / 1000.0f);
+    rangeSet(rangeLeft, 1000 / 1000.0f);
+    rangeSet(rangeRight, 1000 / 1000.0f);
+                       
     isInit = true;
 
     xTaskCreate(mrTask, MULTIRANGER_TASK_NAME, MULTIRANGER_TASK_STACKSIZE, NULL,
                 MULTIRANGER_TASK_PRI, NULL);
+                
 }
 
 // @@ Removed static
@@ -195,11 +241,12 @@ bool mrTest()
 
     isPassed = isInit;
 
+    isPassed &= pca95x4Test(PCA95X4_DEFAULT_ADDRESS); // @@ 
     isPassed &= mrInitSensor(&devFront, MR_PIN_FRONT, "front");
     isPassed &= mrInitSensor(&devBack, MR_PIN_BACK, "back");
     isPassed &= mrInitSensor(&devUp, MR_PIN_UP, "up");
-    isPassed &= mrInitSensor(&devLeft, MR_PIN_LEFT, "left");
-    isPassed &= mrInitSensor(&devRight, MR_PIN_RIGHT, "right");
+    mrInitSensor(&devLeft, MR_PIN_LEFT, "left"); // @@ isPassed &= mrInitSensor(&devLeft, MR_PIN_LEFT, "left");
+    mrInitSensor(&devRight, MR_PIN_RIGHT, "right");// @@ isPassed &= mrInitSensor(&devRight, MR_PIN_RIGHT, "right");
 
     isTested = true;
 

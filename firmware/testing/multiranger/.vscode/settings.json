@@ -8,7 +8,9 @@
     "deck_spi.h": "c",
     "ms5611.h": "c",
     "deck_digital.h": "c",
-    "static_mem.h": "c"
+    "static_mem.h": "c",
+    "stabilizer_types.h": "c",
+    "vl53l1x.h": "c"
   },
   "idf.openOcdConfigs": [
     "board/esp32s3-builtin.cfg"
@@ -17,5 +19,5 @@
     "IDF_TARGET": "esp32s3"
   },
   "idf.flashType": "UART",
-  "idf.portWin": "COM4"
+  "idf.portWin": "COM6"
 }

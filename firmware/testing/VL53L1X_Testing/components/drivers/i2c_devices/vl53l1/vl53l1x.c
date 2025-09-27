@@ -68,25 +68,28 @@ bool vl53l1xInit(VL53L1_Dev_t *pdev, I2C_Dev *I2cHandle)
   //newAddress = nextI2CAddress++;
   //taskEXIT_CRITICAL();
 
-  //vl53l1xSetI2CAddress(pdev, newAddress);
+  vl53l1xSetI2CAddress(pdev, newAddress);
 
   uint8_t byteData;
   uint16_t wordData;
   VL53L1_RdByte(pdev, 0x010F, &byteData);
-  DEBUG_PRINT( "VL53L1X Model_ID: %02X\n\r", byteData);
+  DEBUG_PRINTI( "VL53L1X Model_ID: %02X\n\r", byteData); // @@
   VL53L1_RdByte(pdev, 0x0110, &byteData);
-  DEBUG_PRINT( "VL53L1X Module_Type: %02X\n\r", byteData);
+  DEBUG_PRINTI( "VL53L1X Module_Type: %02X\n\r", byteData); // @@
   VL53L1_RdWord(pdev, 0x010F, &wordData);
-  DEBUG_PRINT( "VL53L1X: %02X\n\r", wordData);
+  DEBUG_PRINTI( "VL53L1X: %02X\n\r", wordData); // @@
 
   status = VL53L1_WaitDeviceBooted(pdev);
+  DEBUG_PRINTI("Boot Status: %d", status);
   if (status == VL53L1_ERROR_NONE)
   {
 	status = VL53L1_DataInit(pdev);
+	DEBUG_PRINTI("Init Status: %d", status);
 
 	if (status == VL53L1_ERROR_NONE)
 	{
 		status = VL53L1_StaticInit(pdev);
+		DEBUG_PRINTI("Static Init Status: %d", status);
 	}
   }
 

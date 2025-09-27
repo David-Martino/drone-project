@@ -32,7 +32,7 @@
 #include "stabilizer_types.h"
 #include "estimator.h"
 
-static uint16_t ranges[RANGE_T_END] = {0,};
+static uint16_t ranges[RANGE_T_END] = {10, 10, 10, 10, 10, 10}//{0,};
 
 void rangeSet(rangeDirection_t direction, float range_m)
 {

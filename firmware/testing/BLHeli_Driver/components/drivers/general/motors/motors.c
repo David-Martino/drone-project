@@ -34,8 +34,14 @@
 #define DEBUG_MODULE "MOTORS"
 #include "debug_cf.h"
 
+#define THRUSTMAP_MAX 41000u // @@ max thrust to remap to (0-65536)
+
 static uint16_t motorsConvBitsTo16(uint16_t bits);
 static uint16_t motorsConv16ToBits(uint16_t bits);
+static uint16_t motorsThrustMap(uint16_t bits); // @@
+static uint16_t motorsThrustInverseMap(uint16_t bits); // @@
+
+
 
 uint32_t motor_ratios[] = {0, 0, 0, 0};
 
@@ -55,7 +61,7 @@ static bool isTimerInit = false;
 ledc_channel_config_t motors_channel[NBR_OF_MOTORS] = {
     {
         .channel = MOT_PWM_CH1,
-        .duty = 0, // @@ TODO: this doesn't affect anything but maybe set for 1/2 of resolution
+        .duty = 0, // @@ TODO: Maybe this could be set to the half resolution instead of the initialisation GPIO method? 
         .gpio_num = MOTOR1_GPIO,
         .speed_mode = LEDC_LOW_SPEED_MODE,
         .timer_sel = LEDC_TIMER_0
@@ -84,18 +90,44 @@ ledc_channel_config_t motors_channel[NBR_OF_MOTORS] = {
 };
 /* Private functions */
 
+// @@ This function is used for estimation and logging
 static uint16_t motorsConvBitsTo16(uint16_t bits)
 {
+    bits = motorsThrustInverseMap(bits); // @@
+
     // @@ This function has been modified to map 128-256 (8 bit) to 0-65535 (16 bit)
     // return ((bits) << (16 - MOTORS_PWM_BITS)); // original crazyflie line
     return (bits - (1 << (MOTORS_PWM_BITS-1))) << (16 - MOTORS_PWM_BITS + 1); // @@ 
 }   
 
+// @@ This function is for mapping the Thrust command (16 bit) to a Duty Cycle (8 bit, only 128-256)
 static uint16_t motorsConv16ToBits(uint16_t bits)
 {
+    bits = motorsThrustMap(bits); // @@
+
     // @@ This function has been modified to map 0-65535 (16 bit) to 128-256 (8 bit) for MOTORS_PWM_BITS=8 (will work for any MOTORS_PWM_BITS <= 17)
     // return ((bits) >> (16 - MOTORS_PWM_BITS) & ((1 << MOTORS_PWM_BITS) - 1)); // original crazyflie line
     return (bits >> (16 - MOTORS_PWM_BITS + 1)) + (1 << (MOTORS_PWM_BITS-1)); // @@ explanation: bitshift down 9 bits (maps to 0-127), then add 128 (maps to 127-255) 
+}
+
+// @@ Custom Function - Linearly remap the thrust to limit power
+// @@ ie.     T ---->[THRUST Map]---T'---->[motorsConv16ToBits]----DutyCycle--->Motors
+// @@ where T = Thrust Input (0-65535); T' = Mapped Thrust (0-THRUSTMAP_MAX); DutyCycle = 128-256 (but upper range of DutyCycle is limited by THRUSTMAP_MAX)
+// @@ (although this function is technically a part of motorsConv16ToBits so only motorsConv16ToBits needs to be called)
+static uint16_t motorsThrustMap(uint16_t bits)
+{   
+    uint32_t mappedThrust = ((uint32_t)bits * THRUSTMAP_MAX) / 65535u;
+
+    return (uint16_t)mappedThrust;
+}
+
+
+// @@ Custom Function - Do the inverse of the limit mapping so that 100% Thrust is still 65535 outside of the motor driver.
+static uint16_t motorsThrustInverseMap(uint16_t bits)
+{
+    uint32_t demappedThrust =  ((uint32_t)bits * 65535u) / THRUSTMAP_MAX;
+
+    return (uint16_t)demappedThrust;
 }
 
 bool pwm_timmer_init()
@@ -128,7 +160,7 @@ bool pwm_timmer_init()
 
 /* Public functions */
 
-//Initialization. Will set all motors ratio to 0%
+//Initialization. Will set all motors ratio to 0% //@@ Probably not good thing?
 void motorsInit(const MotorPerifDef **motorMapSelect)
 {
     int i;
@@ -195,7 +227,7 @@ void motorsSetRatio(uint32_t id, uint16_t ithrust)
 #ifdef ENABLE_THRUST_BAT_COMPENSATED
 
         if (motorMap[id]->drvType == BRUSHED) {
-            float thrust = ((float)ithrust / 65536.0f) * 40; //根据实际重量修改
+            float thrust = ((float)ithrust / 65536.0f) * 40; //根据实际重量修改 //@@ Translation "Modify according to actual weight" so would replace 40 with our weight in grams.
             float volts = -0.0006239f * thrust * thrust + 0.088f * thrust;
             float supply_voltage = pmGetBatteryVoltage();
             float percentage = volts / supply_voltage;

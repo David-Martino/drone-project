@@ -50,7 +50,6 @@ static spi_device_handle_t spi;
 
 void spiBegin(void)
 {
-
     if (isInit) {
         return;
     }
@@ -81,9 +80,12 @@ void spiBegin(void)
     int dma_chan = host_id; //set dma channel equals to host_id by default
     ret = spi_bus_initialize(host_id, &buscfg, dma_chan);
 #endif
+
+    //DEBUG_PRINTI("%s",*esp_err_name(ret)); //@@
     ESP_ERROR_CHECK(ret);
     //Attach the pmw3901 to the SPI bus
     ret = spi_bus_add_device(host_id, &devcfg, &spi);
+    //DEBUG_PRINTI("%s",*esp_err_name(ret)); //@@
     ESP_ERROR_CHECK(ret);
 
     isInit = true;

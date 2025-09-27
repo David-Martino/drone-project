@@ -98,7 +98,7 @@ bool i2cdevReadReg8(I2C_Dev *dev, uint8_t devAddress, uint8_t memAddress,
     i2c_master_write_byte(cmd, (devAddress << 1) | I2C_MASTER_READ, I2C_MASTER_ACK_EN);
     i2c_master_read(cmd, data, len, I2C_MASTER_LAST_NACK);
     i2c_master_stop(cmd);
-    esp_err_t err = i2c_master_cmd_begin(dev->def->i2cPort, cmd, (TickType_t)5);
+    esp_err_t err = i2c_master_cmd_begin(dev->def->i2cPort, cmd, (TickType_t)100); // @@ changed  to 100 from 5
     i2c_cmd_link_delete(cmd);
 
     xSemaphoreGive(dev->isBusFreeMutex);
@@ -157,7 +157,7 @@ bool i2cdevReadReg16(I2C_Dev *dev, uint8_t devAddress, uint16_t memAddress,
     i2c_master_write_byte(cmd, (devAddress << 1) | I2C_MASTER_READ, I2C_MASTER_ACK_EN);
     i2c_master_read(cmd, data, len, I2C_MASTER_LAST_NACK);
     i2c_master_stop(cmd);
-    esp_err_t err = i2c_master_cmd_begin(dev->def->i2cPort, cmd, (TickType_t)5);
+    esp_err_t err = i2c_master_cmd_begin(dev->def->i2cPort, cmd, (TickType_t)100); // @@ modified to 100 from 5
     i2c_cmd_link_delete(cmd);
 
     xSemaphoreGive(dev->isBusFreeMutex);
@@ -245,7 +245,7 @@ bool i2cdevWriteReg8(I2C_Dev *dev, uint8_t devAddress, uint8_t memAddress,
     }
     i2c_master_write(cmd, (uint8_t *)data, len, I2C_MASTER_ACK_EN);
     i2c_master_stop(cmd);
-    esp_err_t err = i2c_master_cmd_begin(dev->def->i2cPort, cmd, (TickType_t)5);
+    esp_err_t err = i2c_master_cmd_begin(dev->def->i2cPort, cmd, (TickType_t)100); // @@ changed from 5 to 100
     i2c_cmd_link_delete(cmd);
 
     xSemaphoreGive(dev->isBusFreeMutex);
@@ -302,7 +302,7 @@ bool i2cdevWriteReg16(I2C_Dev *dev, uint8_t devAddress, uint16_t memAddress,
     }
     i2c_master_write(cmd, (uint8_t *)data, len, I2C_MASTER_ACK_EN);
     i2c_master_stop(cmd);
-    esp_err_t err = i2c_master_cmd_begin(dev->def->i2cPort, cmd, (TickType_t)5);
+    esp_err_t err = i2c_master_cmd_begin(dev->def->i2cPort, cmd, (TickType_t)100); // @@ modified to 100 from 5
     i2c_cmd_link_delete(cmd);
 
     xSemaphoreGive(dev->isBusFreeMutex);
@@ -339,4 +339,24 @@ bool i2cdevWriteReg16(I2C_Dev *dev, uint8_t devAddress, uint16_t memAddress,
     } else {
         return false;
     }
+}
+
+// @@ I2C Scan for Debugging
+void i2c_scan(I2C_Dev *dev)
+{
+    DEBUG_PRINTI("Scanning I2C bus...\n");
+    for (int addr = 0x08; addr < 0x78; addr++) {
+        i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+        i2c_master_start(cmd);
+        // shift left because ESP-IDF uses 7-bit addr+R/W
+        i2c_master_write_byte(cmd, (addr << 1) | I2C_MASTER_WRITE, I2C_MASTER_ACK_EN);
+        i2c_master_stop(cmd);
+        esp_err_t ret = i2c_master_cmd_begin(dev->def->i2cPort, cmd, 50 / portTICK_PERIOD_MS);
+        i2c_cmd_link_delete(cmd);
+
+        if (ret == ESP_OK) {
+            DEBUG_PRINTI("Found device at 0x%02X\n", addr);
+        }
+    }
+    DEBUG_PRINTI("Scan done.\n");
 }

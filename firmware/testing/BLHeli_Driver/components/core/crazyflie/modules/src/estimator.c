@@ -122,6 +122,7 @@ void stateEstimatorSwitchTo(StateEstimatorType estimator) {
     newEstimator = DEFAULT_ESTIMATOR;
   }
 
+  // @@ HARDCODED ESTIMATOR SET THROUGH ESTIMATOR_NAME MACRO
   StateEstimatorType forcedEstimator = ESTIMATOR_NAME;
   if (forcedEstimator != anyEstimator) {
     DEBUG_PRINTI("Estimator type forced\n");

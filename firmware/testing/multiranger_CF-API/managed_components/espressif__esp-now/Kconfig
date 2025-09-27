@@ -1,0 +1,271 @@
+menu "ESP-NOW Configuration"
+    
+    menu "ESP-NOW Security Configuration"
+
+    config ESPNOW_APP_SECURITY
+        bool "Secure application data"
+        default y
+        help
+            Enable to secure the application level data.
+
+    config ESPNOW_ALL_SECURITY
+        bool "Secure all data"
+        default n
+        depends on ESPNOW_APP_SECURITY
+        help
+            Enable to secure all application data.
+
+    config ESPNOW_CONTROL_SECURITY
+        bool "Secure control data"
+        default n
+        depends on ESPNOW_APP_SECURITY && !ESPNOW_ALL_SECURITY
+        help
+            Enable to secure the control data.
+
+    config ESPNOW_DEBUG_SECURITY
+        bool "Secure debug data"
+        default n
+        depends on ESPNOW_APP_SECURITY && !ESPNOW_ALL_SECURITY
+        help
+            Enable to secure the debug data.
+
+    config ESPNOW_OTA_SECURITY
+        bool "Secure OTA data"
+        default n
+        depends on ESPNOW_APP_SECURITY && !ESPNOW_ALL_SECURITY
+        help
+            Enable to secure the OTA data.
+
+    config ESPNOW_PROV_SECURITY
+        bool "Secure provisioning data"
+        default n
+        depends on ESPNOW_APP_SECURITY && !ESPNOW_ALL_SECURITY
+        help
+            Enable to secure the provisioning data.
+
+    endmenu
+
+    menu "ESP-NOW Light Sleep Configuration"
+
+    config ESPNOW_LIGHT_SLEEP
+        bool "Enter light sleep before sending ESP-NOW package"
+        default n
+        help
+            Since sending an ESP-NOW package needs a lot of power, if the coin cell solution is used, it needs some time to charge the electric capacity, so let device enter light sleep to wait some time.
+
+    config ESPNOW_LIGHT_SLEEP_DURATION
+        int "Light sleep duration"
+        range 15 120
+        depends on ESPNOW_LIGHT_SLEEP
+        default 30
+        help
+            Set the duration of light sleep, make it enough to charge the electric capacity.
+
+    endmenu
+
+    menu "ESP-NOW Control Configuration"
+
+    config ESPNOW_CONTROL_AUTO_CHANNEL_SENDING
+        bool "Auto control the channel of ESP-NOW package sending"
+        default n
+        help
+            The channel sequence used for ESP-NOW package sending is [1, 6, 11, 1, 6, 11, 2, 3, 4, 5, 7, 8, 9, 10, 12, 13] by default.
+
+    config ESPNOW_CONTROL_WAIT_ACK_DURATION
+        int "Duration to wait for ACK"
+        range 3 100
+        depends on ESPNOW_CONTROL_AUTO_CHANNEL_SENDING
+        default 40
+        help
+            Set the duration to wait for ACK. Use a value big enough to avoid retransmissions.
+
+    config ESPNOW_CONTROL_RETRANSMISSION_TIMES
+        int "Retransmission times when sending an ESP-NOW package from the saved channel"
+        range 1 15
+        depends on ESPNOW_CONTROL_AUTO_CHANNEL_SENDING
+        default 5
+        help
+            The ESP-NOW package will be sent on the saved channel for this retransmission times, then try the auto channel sending.
+
+    config ESPNOW_CONTROL_AUTO_CHANNEL_FORWARD
+        bool "Auto control ESP-NOW package forwarding on different channels"
+        depends on ESPNOW_CONTROL_AUTO_CHANNEL_SENDING
+        default n
+        help
+            The ESP-NOW package will be forwarded on different channels.
+
+    config ESPNOW_CONTROL_FORWARD_TTL
+        int "The max number of hops when forward data"
+        range 1 31
+        depends on ESPNOW_CONTROL_AUTO_CHANNEL_SENDING
+        default 10
+        help
+            The ESP-NOW package will be forward when the number of hops in data transfer is not zero.
+
+    config ESPNOW_CONTROL_FORWARD_RSSI
+        int "The worst signal of the hop when forward data"
+        range -70 -30
+        depends on ESPNOW_CONTROL_AUTO_CHANNEL_SENDING
+        default -55
+        help
+            The ESP-NOW package will not be forward when the data packet signal received by the receiving device is lower than the value.
+
+    endmenu
+
+    menu "ESP-NOW OTA configuration"
+    
+    config ESPNOW_OTA_RETRANSMISSION_TIMES
+        int "Retransmission times when sending an ESP-NOW OTA package from the saved channel"
+        range 1 15
+        default 2
+        help
+            The ESP-NOW package will be sent on the saved channel for this retransmission times
+
+    config ESPNOW_OTA_RETRY_COUNT
+        int "OTA send retry count"
+        default 50
+        help
+            Number of times initiator will try to update device
+    
+    config ESPNOW_OTA_SEND_FORWARD_TTL
+        int "The max number of hops when forward data"
+        range 0 31
+        default 0
+        help
+            The ESP-NOW OTA package will be forward when the number of hops in data transfer is not zero.
+    
+    config ESPNOW_OTA_SEND_FORWARD_RSSI
+        int "The worst signal of the hop when forward data"
+        range -70 -30
+        default -65
+        help
+            The ESP-NOW OTA package will not be forward when the data packet signal received by the receiving device is lower than the value.
+
+    config ESPNOW_OTA_WAIT_RESPONSE_TIMEOUT
+        int "Time to wait for responder to answer in ms"
+        default 10000
+        range 100 10000
+        help
+            The ESP-NOW OTA will wait for respond for maximum given time
+    endmenu
+
+    config ESPNOW_AUTO_RESTORE_CHANNEL
+        bool "Restore primary channel at the end of ESP-NOW package sending"
+        default n
+        help
+            If the primary channel has changed during package sending, restore the primary channel at the end of sending.
+
+    config ESPNOW_DATA_FAST_ACK
+        bool "Call the ack handler immediately in the data receive callback"
+        default n
+        help
+            Select whether to call the ack handler immediately in the data receive callback, or queue it and call it when idle.
+
+    menu "ESP-NOW Utils Configuration"
+    choice ESPNOW_MEM_ALLOCATION_LOCATION
+        prompt "The memory location allocated by MALLOC, CALLOC and REALLOC"
+        help 
+            choice where to allocate memory, can be SPIRAM or default
+
+        config ESPNOW_MEM_ALLOCATION_DEFAULT
+            bool "default allocation strategy"
+        config ESPNOW_MEM_ALLOCATION_SPIRAM
+            depends on ESP32S3_SPIRAM_SUPPORT || ESP32S2_SPIRAM_SUPPORT || ESP32_SPIRAM_SUPPORT
+            bool "allocate memory in SPIRAM"
+    endchoice
+        
+    config ESPNOW_MEM_DEBUG
+        bool "Memory debug"
+        default y
+        help
+            Memory debug.
+
+    config ESPNOW_MEM_DBG_INFO_MAX
+        int "The max records for Memory debug."
+        default 128
+        help
+            Config Memory debug record max.
+
+    config ESPNOW_NVS_NAMESPACE
+        string "Namespace where data is stored in NVS"
+        default "espnow"
+        help
+            Namespace where data is stored in NVS.
+
+    config ESPNOW_REBOOT_UNBROKEN_INTERVAL_TIMEOUT
+        int "Continuous reboot interval(ms)"
+        default 5000
+        help
+        Continuous reboot interval.
+
+    config ESPNOW_REBOOT_UNBROKEN_FALLBACK_COUNT
+        int "Continuous restart triggers version rollback"
+        default 30
+        help
+        Continuous restart triggers version rollback.
+    endmenu
+
+    menu "ESP-NOW Debug Configuration" 
+    menu "Debug console Configuration"
+        config ESPNOW_STORE_HISTORY
+            bool "Store command history in flash"
+            default y
+            help
+                Linenoise line editing library provides functions to save and load
+                command history. If this option is enabled, initalizes a FAT filesystem
+                and uses it to store command history.
+    endmenu
+
+    menu "Debug Log Configuration"
+        config ESPNOW_DEBUG_LOG_PARTITION_LABEL_DATA
+            string "The partition label used to store log info"
+            default "log_info"
+            help
+                Store log info partition label.
+            
+        config ESPNOW_DEBUG_LOG_PARTITION_LABEL_NVS
+            string "The partition lable used to store log status"
+            default "log_status"
+            help
+                Store log status partition label.
+
+        config ESPNOW_DEBUG_LOG_FILE_MAX_SIZE
+            int "The file size of the log"
+            range 8196 131072
+            default 65536
+            help
+                The file size of the log
+
+        config ESPNOW_DEBUG_LOG_PARTITION_OFFSET
+            int "Offset of the log information in partition"
+            range 0 524288
+            default 0
+            help
+                Offset of the log information partition
+
+        config ESPNOW_DEBUG_LOG_PRINTF_ENABLE
+            bool "Output the `printf` information of the espnow module"
+            default n
+            help
+                Output the `printf` information of the espnow module
+    endmenu
+
+    choice ESPNOW_DEBUG_CONSOLE_UART_NUM
+        prompt "UART for console input"
+        default ESPNOW_DEBUG_CONSOLE_UART_NUM_0
+        help
+            UART to be selected for serial console.
+
+        config ESPNOW_DEBUG_CONSOLE_UART_NUM_0
+            bool "UART0"
+        config ESPNOW_DEBUG_CONSOLE_UART_NUM_1
+            bool "UART1"
+    endchoice
+
+    config ESPNOW_DEBUG_CONSOLE_UART_NUM
+        int
+        default 0 if ESPNOW_DEBUG_CONSOLE_UART_NUM_0
+        default 1 if ESPNOW_DEBUG_CONSOLE_UART_NUM_1
+    endmenu
+
+endmenu

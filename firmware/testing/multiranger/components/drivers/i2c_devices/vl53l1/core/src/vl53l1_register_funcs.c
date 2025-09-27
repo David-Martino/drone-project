@@ -192,12 +192,14 @@ VL53L1_Error VL53L1_set_static_nvm_managed(
 			comms_buffer);
 
 	if (status == VL53L1_ERROR_NONE)
+	{
+		printf("I am doodoo bye bye address\n"); //@@ 
 		status = VL53L1_WriteMulti(
 			Dev,
 			VL53L1_I2C_SLAVE__DEVICE_ADDRESS,
 			comms_buffer,
 			VL53L1_STATIC_NVM_MANAGED_I2C_SIZE_BYTES);
-
+	};
 	LOG_FUNCTION_END(status);
 
 	return status;
