@@ -8,6 +8,7 @@
   "idf.portWin": "COM6",
   "idf.flashType": "UART",
   "files.associations": {
-    "debug_cf.h": "c"
+    "debug_cf.h": "c",
+    "system.h": "c"
   }
 }

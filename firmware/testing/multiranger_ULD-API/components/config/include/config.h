@@ -108,7 +108,7 @@
 #define SENSORS_TASK_PRI        6
 #define STABILIZER_TASK_PRI     7
 #define KALMAN_TASK_PRI         4
-#define MULTIRANGER_TASK_PRI    4 // @@ Added Stack overflow at 5
+#define MULTIRANGER_TASK_PRI    4 // @@ Added, Stack overflow at 5
 
 // the kalman filter consumes a lot of CPU
 // for single core systems, we need to lower the priority

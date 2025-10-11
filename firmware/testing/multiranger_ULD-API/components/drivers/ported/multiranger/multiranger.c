@@ -160,8 +160,8 @@ static void mrTask(void *param)
         rangeSet(rangeFront, mrGetMeasurementAndRestart(&devFront) / 1000.0f);
         rangeSet(rangeBack, mrGetMeasurementAndRestart(&devBack) / 1000.0f);
         rangeSet(rangeUp, mrGetMeasurementAndRestart(&devUp) / 1000.0f);
-        //rangeSet(rangeLeft, mrGetMeasurementAndRestart(&devLeft) / 1000.0f);
-        //rangeSet(rangeRight, mrGetMeasurementAndRestart(&devRight) / 1000.0f);
+        rangeSet(rangeLeft, mrGetMeasurementAndRestart(&devLeft) / 1000.0f);
+        rangeSet(rangeRight, mrGetMeasurementAndRestart(&devRight) / 1000.0f);
         
         //DEBUG_PRINTI("Range Front: %.3f", rangeGet(rangeFront));
     }
@@ -197,12 +197,12 @@ void mrInit()
     pca95x4ClearOutput(PCA95X4_DEFAULT_ADDRESS, 0xff); // @@ makes ALL pins low
 
     #ifdef SPOOF
-        rangeSet(rangeFront, 1000 / 1000.0f);
-        rangeSet(rangeBack, 1000 / 1000.0f);
-        rangeSet(rangeUp, 1000 / 1000.0f);
-        rangeSet(rangeLeft, 1000 / 1000.0f); 
-        rangeSet(rangeRight, 1000 / 1000.0f); 
-        rangeSet(rangeDown, 1000 / 1000.0f); 
+        // rangeSet(rangeFront, 1000 / 1000.0f);
+        // rangeSet(rangeBack, 1000 / 1000.0f);
+        // rangeSet(rangeUp, 1000 / 1000.0f);
+        // rangeSet(rangeLeft, 1000 / 1000.0f); 
+        // rangeSet(rangeRight, 1000 / 1000.0f); 
+        rangeSet(rangeDown, 300 / 1000.0f); 
     #endif
                        
     isInit = true;

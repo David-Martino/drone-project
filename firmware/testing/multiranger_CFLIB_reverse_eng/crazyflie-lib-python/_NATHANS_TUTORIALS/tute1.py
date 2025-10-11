@@ -18,6 +18,7 @@ from cflib.crazyflie.syncLogger import SyncLogger
 # Literalyl just change the uri to a udp:// link and it will use the udp driver
 uri = uri_helper.uri_from_env(default='udp://192.168.43.42')
 
+
 def param_stab_est_callback(name, value):
     print('The crazyflie has parameter '+ name + ' set at number: ' + value)
 
@@ -56,7 +57,7 @@ def simple_log(scf, logconf):
             data = log_entry[1]
             logconf_name = log_entry[2]
 
-            print('[%d][%s]: %s' % (timestamp, logconf_name, data))
+            print('[%d]: %s' % (timestamp, data))
 
             #break # what we breaking for tho
 
@@ -69,10 +70,10 @@ if __name__ == '__main__':
     # Initialize low-level dri
     cflib.crtp.init_drivers()
 
-    #lg_stab = LogConfig(name='Stabilizer', period_in_ms=10)
-    #lg_stab.add_variable('stabilizer.roll', 'float')
-    #lg_stab.add_variable('stabilizer.pitch', 'float')
-    #lg_stab.add_variable('stabilizer.yaw', 'float')
+    lg_stab = LogConfig(name='Stabilizer', period_in_ms=10)
+    lg_stab.add_variable('stabilizer.roll', 'float')
+    lg_stab.add_variable('stabilizer.pitch', 'float')
+    lg_stab.add_variable('stabilizer.yaw', 'float')
 
     lg_range = LogConfig(name='Range', period_in_ms=10)
     lg_range.add_variable('range.front', 'int16_t')
@@ -82,9 +83,19 @@ if __name__ == '__main__':
     lg_range.add_variable('range.up', 'int16_t')
     lg_range.add_variable('range.zrange', 'int16_t')
 
+    lg_state = LogConfig(name='State', period_in_ms=10)
+    lg_state.add_variable('stateEstimate.x', 'float')
+    lg_state.add_variable('stateEstimate.y', 'float')
+    lg_state.add_variable('stateEstimate.z', 'float')
+
+    lg_motion = LogConfig(name='Motion', period_in_ms=10)
+    lg_motion.add_variable('motion.deltax', 'uint16_t')
+    lg_motion.add_variable('motion.deltay', 'uint16_t')
+
     group = "stabilizer"
     name = "estimator"
 
     with SyncCrazyflie(uri, cf=Crazyflie(rw_cache='./cache')) as scf:
 
         simple_log(scf, lg_range)
+

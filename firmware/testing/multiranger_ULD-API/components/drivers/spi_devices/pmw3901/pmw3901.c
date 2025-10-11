@@ -191,7 +191,7 @@ bool pmw3901Init(uint32_t csPin)
     uint8_t chipId    = registerRead(csPin, 0x00);
     uint8_t invChipId = registerRead(csPin, 0x5f);
 
-    DEBUG_PRINTD("Motion chip id: 0x%x:0x%x\n", chipId, invChipId);
+    DEBUG_PRINTI("Motion chip id: 0x%x:0x%x\n", chipId, invChipId); //@@
 
     if (chipId == 0x49 || invChipId == 0xB6) {
         // Power on reset

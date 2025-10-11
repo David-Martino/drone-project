@@ -143,7 +143,7 @@ bool pmTest(void)
  */
 static void pmSetBatteryVoltage(float voltage)
 {
-  batteryVoltage = voltage; // @@ you are LITERALLY not doing anything oh my lord.
+  batteryVoltage = voltage;
   batteryVoltageMV = (uint16_t)(voltage * 1000);
   if (batteryVoltageMax < voltage)
   {

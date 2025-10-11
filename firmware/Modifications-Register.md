@@ -394,6 +394,8 @@ The Timer frequency is set to 500Hz. The functions motorsConv16ToBits(.) and mot
 
 The BLHeli ESC doesn't like it (as in it somehow causes the device to reboot) when the signal inputs are in their high-impedance (or undefined?) state before the signal GPIO are configured as PWM signals. So, the first thing done in the code is to set the motor signal pins as GPIO and just set them low during initialisation. The arming process works normally.
 
+NOTE!! The BLHeli_Driver testing folder also contains changes made for Power Management (see the other changes in the section below!)
+
 ### Relevant files:
 - `components/core/crazyflie/modules/src/power_distribution_stock.c`
 - `components/drivers/general/motors/motors.c`
@@ -430,17 +432,20 @@ The BLHeli ESC doesn't like it (as in it somehow causes the device to reboot) wh
 
 
 ## Power Management
-Configuring the power management to read a 2S battery. NOTE that in testing, these changes have been integrated with the BLHeli_Driver folder rather than a separate power management folder.
+Configuring the power management to read a 2S battery. NOTE that in testing, these changes have been integrated with the `BLHeli_Driver` folder rather than a separate power management folder.
 
 ### Relevant files
 - `components/core/crazyflie/hal/interface/pm_esplane.c`
 - `components/core/crazyflie/hal/interface/pm_esplane.c`
 
 ### Modifications Log
-1. TODO: In pm_esplane.c, bat671723HS25C holds an LUT for mapping battery voltage->percentage. This must be updated with the battery discharge curve.
+1. In pm_esplane.c, bat671723HS25C holds an LUT for mapping battery voltage->percentage. This must be updated with the battery discharge curve. NOTE: this has only been done in the main folder, not in the testing folder.
 2. In pm_esplane.c, function pmInit() calls pmEnableExtBatteryVoltMeasuring(CONFIG_ADC1_PIN, xx). Change xx to 4. xx is the multiplier that corrects for our 4:1 voltage divider on the ADC input.
 3. In pm_esplane.c, function pmInit() sets pmSyslinkInfo.vBat = 3.7f. Change this to 7.4f -- not actually sure what this does, may just be for logging
 4. In pm_esplane.h, set PM_BAT_LOW_VOLTAGE  to 6.4f (original 3.2f)
 5. In pm_esplane.h, set PM_BAT_CRITICAL_LOW_VOLTAGE to 6.0f (original 3.0f)
+
+NOTE: the LV limits maybe should be lowered considering how quickly the SOC curve falls off...
+NOTE: Also keep in mind, the voltage drop over battery cable is roughly 0.3V @ 10A - although this may be badly measured (measured relaxed voltage at 8.4V, and then measured the voltage at the PCB instantly while drawing 10A)
 
 

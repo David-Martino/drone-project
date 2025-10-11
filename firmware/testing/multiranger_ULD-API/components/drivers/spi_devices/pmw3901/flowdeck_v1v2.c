@@ -99,6 +99,8 @@ static void flowdeckTask(void *param)
         int16_t accpx = -currentMotion.deltaY;
         int16_t accpy = -currentMotion.deltaX;
 
+        //DEBUG_PRINTI("dx: %d \t dy = %d", accpx, accpy); //@@
+
         // Outlier removal
         if (abs(accpx) < OULIER_LIMIT && abs(accpy) < OULIER_LIMIT) {
         if (useAdaptiveStd)
