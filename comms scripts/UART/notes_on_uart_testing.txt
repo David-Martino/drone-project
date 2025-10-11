@@ -1,0 +1,74 @@
+Notes on UART testing
+
+
+1. Configure the serial hardware to be enabled:
+
+	"""
+	sudo raspi-config
+	# Interface Options → Serial
+	#   Login shell over serial?  → No
+	#   Enable serial hardware?   → Yes
+	sudo reboot
+	"""
+
+1. Edit /boot/config.txt with:
+
+	"""
+	cd ..
+	cd ..
+	cd boot
+	cd firmware
+	sudo nano config.txt
+	#	change "dtoverlay=vc4-kms-v3d" to "dtoverlay=disable-bt"
+	#	add "init_uart_clock=48000000"	
+	#	CTRL+O, ENTER to save
+	#	CTRL+X to exit
+	"""
+		
+1. Run this:
+	
+	"""
+	sudo systemctl disable hciuart.service
+	sudo reboot
+	"""
+	
+1. Check with this:
+
+	""" 
+	ls -l /dev/serial*
+	# 	Should see '... /dev/serial0 -> ttyAMA0'
+	""" 
+	
+1. Install pyserial in a venv with:
+
+	"""
+	cd ~
+	python3 -m venv venv-serial
+	source ~/venv-serial/bin/activate
+	python -m pip install --upgrade pip
+	pip install pyserial
+	"""
+	
+1. Check UART frames are being sent with:
+
+	""" 
+	python -m serial.tools.miniterm /dev/serial0 921600 --raw | hexdump -C
+	#	CTRL+C to stop
+	"""
+	
+1. On ground station (with both on hotspot), navigate to sniffer.py and copy to Pi with:
+
+	"""
+	scp sniffer.py erwin@raspberrypi.local:/home/erwin/
+	#	Enter password: 12345678
+	#	Obvs change to match your device
+	"""
+
+1. Run on Pi with:
+
+	"""
+	sudo systemctl disable --now serial-getty@ttyAMA0.service serial-getty@ttyS0.service hciuart
+	sudo chrt -f 80 ionice -c1 nice -n -20 /home/erwin/imu-venv/bin/python /home/erwin/sniffer.py --throttle 50
+	#	Remove --throttle 50 if you want everything to print
+	#	Change file paths to match your device
+	"""
