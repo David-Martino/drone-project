@@ -72,3 +72,21 @@ Notes on UART testing
 	#	Remove --throttle 50 if you want everything to print
 	#	Change file paths to match your device
 	"""
+
+
+1. On the ground station, prepare for drone discovery test with:
+
+	"""
+	cd ~/Projects/drone-project/comms\ scripts/UART
+	python3 -m venv venv-uart
+	source venv-uart/bin/activate
+	python3 -m pip install --upgrade pip
+	pip install scapy netifaces
+	"""
+
+1. Run drone discovery test with:
+
+	"""
+	sudo ./venv-uart/bin/python3 discovery.py
+	"""
+
