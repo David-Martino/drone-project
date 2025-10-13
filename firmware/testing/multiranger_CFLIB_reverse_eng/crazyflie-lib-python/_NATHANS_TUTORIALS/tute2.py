@@ -13,7 +13,7 @@ from cflib.utils import uri_helper
 uri = uri_helper.uri_from_env(default='udp://192.168.43.42')
 deck_attached_event = Event()
 
-DEFAULT_HEIGHT = 0.3
+DEFAULT_HEIGHT = 0.5
 BOX_LIMIT = 0.5
 
 position_estimate = [0,0]
@@ -42,19 +42,23 @@ def take_off_simple(scf):
     print("Take off!")
     #count  = 0
     with MotionCommander(scf, default_height=DEFAULT_HEIGHT) as mc:
-        time.sleep(4)
-        print("Going Forward")
-        mc.forward(0.5)
-        time.sleep(3)
-        print("Going Right")
-        mc.right(0.5)
-        time.sleep(3)
-        print("Going Back")
-        mc.back(0.5)
-        time.sleep(3)
-        print("Going Left")
-        mc.left(0.5)
-        time.sleep(3)
+        time.sleep(2)
+        print("Hovering")
+        mc.stop()
+        time.sleep(5)
+        # print("Going Forward")
+        # mc.forward(4, velocity = 0.5)
+        # time.sleep(13)
+        # time.sleep(3)
+        # print("Going Right")
+        # mc.right(0.5)
+        # time.sleep(3)
+        # print("Going Back")
+        # mc.back(0.5)
+        # time.sleep(3)
+        # print("Going Left")
+        # mc.left(0.5)
+        # time.sleep(3)
         # print("Rolling right")
         # mc.right(0.5)
         # time.sleep(3)
@@ -71,7 +75,7 @@ def take_off_simple(scf):
         # mc.left(1)
         # time.sleep(3)
         print("Landing!")
-        mc.land()
+        #mc.land()
         #mc.stop()
 
         # tute says it instantly closes with a land function, - ie won't just hover
@@ -87,6 +91,8 @@ def log_pos_callback(timestamp, data, logconf):
 if __name__ == '__main__':
 
     cflib.crtp.init_drivers()
+
+    
 
     with SyncCrazyflie(uri, cf=Crazyflie(rw_cache='./cache')) as scf:
 

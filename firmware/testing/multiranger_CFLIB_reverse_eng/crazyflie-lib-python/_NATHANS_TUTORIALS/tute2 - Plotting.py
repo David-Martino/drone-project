@@ -42,19 +42,19 @@ def move_box_limit(scf):
 
 def take_off_simple(scf):
     with MotionCommander(scf, default_height=DEFAULT_HEIGHT) as mc:
-        time.sleep(4)
-        print("Going Forward")
-        mc.forward(0.5)
-        time.sleep(3)
-        print("Going Right")
-        mc.right(0.5)
-        time.sleep(3)
-        print("Going Back")
-        mc.back(0.5)
-        time.sleep(3)
-        print("Going Left")
-        mc.left(0.5)
-        time.sleep(3)
+        time.sleep(8)
+        # print("Going Forward")
+        # mc.forward(0.5)
+        # time.sleep(3)
+        # print("Going Right")
+        # mc.right(0.5)
+        # time.sleep(3)
+        # print("Going Back")
+        # mc.back(0.5)
+        # time.sleep(3)
+        # print("Going Left")
+        # mc.left(0.5)
+        # time.sleep(3)
 
         print("Landing!")
         mc.land()
@@ -63,12 +63,14 @@ def take_off_simple(scf):
     
 def log_pos_callback(timestamp, data, logconf):
     #print(data['stateEstimate.z'])
-    x = data['stateEstimate.x']
-    y = data['stateEstimate.y']
-    position_estimate[0] = x
-    position_estimate[1] = y
+    # x = data['stateEstimate.x']
+    # y = data['stateEstimate.y']
+    # position_estimate[0] = x
+    # position_estimate[1] = y
 
-    print(f"x: {x} \t y: {y}")
+    vbat = data['pm.vbat']
+
+    print(f"Voltage: {vbat} V")
 
 
     # hl.set_data(x,y)
@@ -86,9 +88,10 @@ if __name__ == '__main__':
 
         # Logging Setup
         logconf = LogConfig(name='Position', period_in_ms=10)
-        logconf.add_variable('stateEstimate.x', 'float')
-        logconf.add_variable('stateEstimate.y', 'float')
-        logconf.add_variable('stateEstimate.z', 'float')
+        # logconf.add_variable('stateEstimate.x', 'float')
+        # logconf.add_variable('stateEstimate.y', 'float')
+        # logconf.add_variable('stateEstimate.z', 'float')
+        logconf.add_variable('pm.vbat','float')
         scf.cf.log.add_config(logconf)
         logconf.data_received_cb.add_callback(log_pos_callback)
 

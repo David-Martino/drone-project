@@ -110,12 +110,14 @@ void commanderGetSetpoint(setpoint_t *setpoint, const state_t *state)
   if ((currentTime - setpoint->timestamp) > COMMANDER_WDT_TIMEOUT_SHUTDOWN) {
     if (enableHighLevel) {
       crtpCommanderHighLevelGetSetpoint(setpoint, state);
+      
     }
     if (!enableHighLevel || crtpCommanderHighLevelIsStopped()) {
       memcpy(setpoint, &nullSetpoint, sizeof(nullSetpoint));
     }
   } else if ((currentTime - setpoint->timestamp) > COMMANDER_WDT_TIMEOUT_STABILIZE) {
     xQueueOverwrite(priorityQueue, &priorityDisable);
+    
     // Leveling ...
     setpoint->mode.x = modeDisable;
     setpoint->mode.y = modeDisable;

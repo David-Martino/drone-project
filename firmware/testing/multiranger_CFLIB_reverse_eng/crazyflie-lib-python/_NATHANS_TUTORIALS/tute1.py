@@ -92,10 +92,19 @@ if __name__ == '__main__':
     lg_motion.add_variable('motion.deltax', 'uint16_t')
     lg_motion.add_variable('motion.deltay', 'uint16_t')
 
+    lg_pm = LogConfig(name='Power', period_in_ms=10)
+    lg_pm.add_variable('pm.vbat','float')
+
+    lg_mag = LogConfig(name='Motion', period_in_ms=10)
+    lg_mag.add_variable('mag.x','float')
+    lg_mag.add_variable('mag.y','float')
+    lg_mag.add_variable('mag.z','float')
+
+
     group = "stabilizer"
     name = "estimator"
 
     with SyncCrazyflie(uri, cf=Crazyflie(rw_cache='./cache')) as scf:
 
-        simple_log(scf, lg_range)
+        simple_log(scf, lg_pm)
 
