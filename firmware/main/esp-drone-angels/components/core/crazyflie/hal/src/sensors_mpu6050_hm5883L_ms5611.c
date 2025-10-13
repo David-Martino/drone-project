@@ -313,8 +313,8 @@ static void sensorsTask(void *param)
             // Overwrite data in gyroProcessedQueue with latest processed IMU gyro data
             xQueueOverwrite(gyroProcessedQueue, &sensorData.gyro);
 
-			// Make non-volatile copy
-			uint64_t imuIntTimestampCopy = imuIntTimestamp; 
+						// Make non-volatile copy
+						uint64_t imuIntTimestampCopy = imuIntTimestamp; 
 
             // Overwrite data in the imuTimestampQueue with the latest IMU timestamp
             xQueueOverwrite(imuTimestampQueue, &imuIntTimestampCopy);
@@ -367,7 +367,7 @@ static void sensorsTask(void *param)
  */
 bool readAccelRawQueue(Axis3i16 *accelRaw)
 {
-    return (pdTRUE == xQueueReceive(accelRawQueue, accelRaw, 0));
+	return (pdTRUE == xQueueReceive(accelRawQueue, accelRaw, 0));
 }
 
 /**
@@ -385,7 +385,7 @@ bool readAccelRawQueue(Axis3i16 *accelRaw)
  */
 bool readGyroRawQueue(Axis3i16 *gyroRaw)
 {
-    return (pdTRUE == xQueueReceive(gyroRawQueue, gyroRaw, 0));
+	return (pdTRUE == xQueueReceive(gyroRawQueue, gyroRaw, 0));
 }
 
 /**
@@ -403,7 +403,7 @@ bool readGyroRawQueue(Axis3i16 *gyroRaw)
  */
 bool readAccelProcessedQueue(Axis3f *accelProcessed)
 {
-    return (pdTRUE == xQueueReceive(accelProcessedQueue, accelProcessed, 0));
+	return (pdTRUE == xQueueReceive(accelProcessedQueue, accelProcessed, 0));
 }
 
 /**
@@ -421,7 +421,7 @@ bool readAccelProcessedQueue(Axis3f *accelProcessed)
  */
 bool readGyroProcessedQueue(Axis3f *gyroProcessed)
 {
-    return (pdTRUE == xQueueReceive(gyroProcessedQueue, gyroProcessed, 0));
+	return (pdTRUE == xQueueReceive(gyroProcessedQueue, gyroProcessed, 0));
 }
 
  /**
@@ -439,7 +439,7 @@ bool readGyroProcessedQueue(Axis3f *gyroProcessed)
  */
 bool readImuTimestampQueue(uint64_t *imuTimestamp)
 {
-    return (pdTRUE == xQueueReceive(imuTimestampQueue, imuTimestamp, 0));
+	return (pdTRUE == xQueueReceive(imuTimestampQueue, imuTimestamp, 0));
 }
 
 //}
