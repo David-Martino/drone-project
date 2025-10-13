@@ -143,6 +143,30 @@ STATIC_MEM_QUEUE_ALLOC(magnetometerDataQueue, 1, sizeof(Axis3f));
 static xQueueHandle barometerDataQueue;
 STATIC_MEM_QUEUE_ALLOC(barometerDataQueue, 1, sizeof(baro_t));
 
+// EDIT{
+
+// Initialise FreeRTOS queue for raw IMU acceleration data
+static xQueueHandle accelRawQueue;
+STATIC_MEM_QUEUE_ALLOC(accelRawQueue, 1, sizeof(Axis3i16));
+
+// Initialise FreeRTOS queue for raw IMU gyro data
+static xQueueHandle gyroRawQueue;
+STATIC_MEM_QUEUE_ALLOC(gyroRawQueue, 1, sizeof(Axis3i16));
+
+// Initialise FreeRTOS queue for processed IMU acceleration data
+static xQueueHandle accelProcessedQueue;
+STATIC_MEM_QUEUE_ALLOC(accelProcessedQueue, 1, sizeof(Axis3f));
+
+// Initialise FreeRTOS queue for processed IMU gyro data
+static xQueueHandle gyroProcessedQueue;
+STATIC_MEM_QUEUE_ALLOC(gyroProcessedQueue, 1, sizeof(Axis3f));
+
+// Initialise FreeRTOS queue for IMU timestamp
+static xQueueHandle imuTimestampQueue;
+STATIC_MEM_QUEUE_ALLOC(imuTimestampQueue, 1, sizeof(uint64_t));
+
+// }
+
 static xSemaphoreHandle sensorsDataReady;
 static xSemaphoreHandle dataReady;
 
@@ -273,6 +297,30 @@ static void sensorsTask(void *param)
             /* sensors step 2-process the respective data */
             processAccGyroMeasurements(&(buffer[0]));
 
+            // EDIT{
+
+            /* Send raw/processed IMU data to queues for UART communication to Pi */
+            
+            // Overwrite data in accelRawQueue with latest raw IMU acceleration data
+            xQueueOverwrite(accelRawQueue, &accelRaw);
+
+            // Overwrite data in gyroRawQueue with latest raw IMU gyro data
+            xQueueOverwrite(gyroRawQueue, &gyroRaw);
+
+            // Overwrite data in accelProcessedQueue with latest processed IMU acceleration data
+            xQueueOverwrite(accelProcessedQueue, &sensorData.acc);
+            
+            // Overwrite data in gyroProcessedQueue with latest processed IMU gyro data
+            xQueueOverwrite(gyroProcessedQueue, &sensorData.gyro);
+
+			// Make non-volatile copy
+			uint64_t imuIntTimestampCopy = imuIntTimestamp; 
+
+            // Overwrite data in the imuTimestampQueue with the latest IMU timestamp
+            xQueueOverwrite(imuTimestampQueue, &imuIntTimestampCopy);
+        
+            // }
+
             if (isMagnetometerPresent) {
                 processMagnetometerMeasurements(&(buffer[SENSORS_MPU6050_BUFF_LEN])); // @@ starting from the end of the imu data
             }
@@ -301,6 +349,100 @@ static void sensorsTask(void *param)
         }
     }
 }
+
+// EDIT{
+
+/**
+ * @brief Receive one raw accelerometer sample from the queue.
+ *
+ * Copies the latest raw accelerometer data from it's queue into @p accelRaw.
+ *
+ * @note This call consumes one item from the queue; call it at most once per
+ *       stabilizer loop.
+ *
+ * @param[out] accelRaw Pointer to destination struct that receives the data.
+ *
+ * @retval true  A sample was available and written to @p accelRaw.
+ * @retval false No sample was available; @p accelRaw is not modified.
+ */
+bool readAccelRawQueue(Axis3i16 *accelRaw)
+{
+    return (pdTRUE == xQueueReceive(accelRawQueue, accelRaw, 0));
+}
+
+/**
+ * @brief Receive one raw gyro sample from the queue.
+ *
+ * Copies the latest raw gyro data from it's queue into @p gyroRaw.
+ *
+ * @note This call consumes one item from the queue; call it at most once per
+ *       stabilizer loop.
+ *
+ * @param[out] gyroRaw Pointer to destination struct that receives the data.
+ *
+ * @retval true  A sample was available and written to @p gyroRaw.
+ * @retval false No sample was available; @p gyroRaw is not modified.
+ */
+bool readGyroRawQueue(Axis3i16 *gyroRaw)
+{
+    return (pdTRUE == xQueueReceive(gyroRawQueue, gyroRaw, 0));
+}
+
+/**
+ * @brief Receive one processed acceleration sample from the queue.
+ *
+ * Copies the latest processed acceleration data from it's queue into @p accelProcessed.
+ *
+ * @note This call consumes one item from the queue; call it at most once per
+ *       stabilizer loop.
+ *
+ * @param[out] accelProcessed Pointer to destination struct that receives the data.
+ *
+ * @retval true  A sample was available and written to @p accelProcessed.
+ * @retval false No sample was available; @p accelProcessed is not modified.
+ */
+bool readAccelProcessedQueue(Axis3f *accelProcessed)
+{
+    return (pdTRUE == xQueueReceive(accelProcessedQueue, accelProcessed, 0));
+}
+
+/**
+ * @brief Receive one processed gyro sample from the queue.
+ *
+ * Copies the latest processed gyro data from it's queue into @p gyroProcessed.
+ *
+ * @note This call consumes one item from the queue; call it at most once per
+ *       stabilizer loop.
+ *
+ * @param[out] gyroProcessed Pointer to destination struct that receives the data.
+ *
+ * @retval true  A sample was available and written to @p gyroProcessed.
+ * @retval false No sample was available; @p gyroProcessed is not modified.
+ */
+bool readGyroProcessedQueue(Axis3f *gyroProcessed)
+{
+    return (pdTRUE == xQueueReceive(gyroProcessedQueue, gyroProcessed, 0));
+}
+
+ /**
+ * @brief Receive one IMU timestamp sample from the queue.
+ *
+ * Copies the latest IMU timestamp data from it's queue into @p imuTimestamp.
+ *
+ * @note This call consumes one item from the queue; call it at most once per
+ *       stabilizer loop.
+ *
+ * @param[out] imuTimestamp Pointer to destination struct that receives the data.
+ *
+ * @retval true  A sample was available and written to @p imuTimestamp.
+ * @retval false No sample was available; @p imuTimestamp is not modified.
+ */
+bool readImuTimestampQueue(uint64_t *imuTimestamp)
+{
+    return (pdTRUE == xQueueReceive(imuTimestampQueue, imuTimestamp, 0));
+}
+
+//}
 
 void sensorsMpu6050Hmc5883lMs5611WaitDataReady(void)
 {
@@ -676,6 +818,25 @@ static void sensorsTaskInit(void)
   gyroDataQueue = STATIC_MEM_QUEUE_CREATE(gyroDataQueue);
   magnetometerDataQueue = STATIC_MEM_QUEUE_CREATE(magnetometerDataQueue);
   barometerDataQueue = STATIC_MEM_QUEUE_CREATE(barometerDataQueue);
+
+  // EDIT {
+  
+  // Create FreeRTOS queue for raw IMU acceleration data
+  accelRawQueue = STATIC_MEM_QUEUE_CREATE(accelRawQueue);
+
+  // Create FreeRTOS queue for raw IMU gyro data
+  gyroRawQueue = STATIC_MEM_QUEUE_CREATE(gyroRawQueue);
+
+  // Create FreeRTOS queue for processed IMU acceleration data
+  accelProcessedQueue = STATIC_MEM_QUEUE_CREATE(accelProcessedQueue);
+
+  // Create FreeRTOS queue for processed IMU gyro data
+  gyroProcessedQueue = STATIC_MEM_QUEUE_CREATE(gyroProcessedQueue);
+
+  // Create FreeRTOS queue for IMU timestamp
+  imuTimestampQueue = STATIC_MEM_QUEUE_CREATE(imuTimestampQueue);
+
+	// }
 
   STATIC_MEM_TASK_CREATE(sensorsTask, sensorsTask, SENSORS_TASK_NAME, NULL, SENSORS_TASK_PRI);
   DEBUG_PRINTD("xTaskCreate sensorsTask \n");

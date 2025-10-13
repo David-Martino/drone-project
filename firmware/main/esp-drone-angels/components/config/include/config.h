@@ -87,6 +87,8 @@
 // communication TX tasks
 #define UDP_TX_TASK_PRI         2
 #define CRTP_TX_TASK_PRI        2
+#define IMU_UART_TASK_PRI       5   // EDIT
+#define UART_SYNC_TASK_PRI      5   // EDIT
 // communication RX tasks
 #define UDP_RX_TASK_PRI         2
 #define EXTRX_TASK_PRI          2
@@ -123,6 +125,7 @@
 #define CRTP_TX_TASK_NAME       "CRTP-TX"
 #define EXTRX_TASK_NAME         "EXTRX"
 #define FLOW_TASK_NAME          "FLOW"
+#define IMU_UART_TASK_NAME      "IMU_UART"    // EDIT
 #define KALMAN_TASK_NAME        "KALMAN"
 #define LEDSEQCMD_TASK_NAME     "LEDSEQCMD"
 #define LOG_TASK_NAME           "LOG"
@@ -135,6 +138,7 @@
 #define SYSLINK_TASK_NAME       "SYSLINK"
 #define SYSTEM_TASK_NAME        "SYSTEM"
 #define UART2_TASK_NAME         "UART2"
+#define UART_SYNC_TASK_NAME     "UART_SYNC"   // EDIT
 #define UDP_RX_TASK_NAME        "UDP_RX"
 #define UDP_TX_TASK_NAME        "UDP_TX"
 #define USBLINK_TASK_NAME       "USBLINK"
@@ -150,6 +154,7 @@
 #define CRTP_TX_TASK_STACKSIZE        (3 * configBASE_STACK_SIZE)
 #define EXTRX_TASK_STACKSIZE          (1 * configBASE_STACK_SIZE)
 #define FLOW_TASK_STACKSIZE           (3 * configBASE_STACK_SIZE)
+#define IMU_UART_TASK_STACKSIZE       (4 * configBASE_STACK_SIZE)   // EDIT
 #define KALMAN_TASK_STACKSIZE         (3 * configBASE_STACK_SIZE)
 #define LEDSEQCMD_TASK_STACKSIZE      (2 * configBASE_STACK_SIZE)
 #define LOG_TASK_STACKSIZE            (3 * configBASE_STACK_SIZE)
@@ -161,6 +166,7 @@
 #define SYSLINK_TASK_STACKSIZE        (1 * configBASE_STACK_SIZE)
 #define SYSTEM_TASK_STACKSIZE         (6 * configBASE_STACK_SIZE)
 #define UART2_TASK_STACKSIZE          (1 * configBASE_STACK_SIZE)
+#define UART_SYNC_TASK_STACKSIZE      (4 * configBASE_STACK_SIZE)   // EDIT
 #define UDP_RX_TASK_STACKSIZE         (4 * configBASE_STACK_SIZE)
 #define UDP_TX_TASK_STACKSIZE         (4 * configBASE_STACK_SIZE)
 #define USBLINK_TASK_STACKSIZE        (1 * configBASE_STACK_SIZE)

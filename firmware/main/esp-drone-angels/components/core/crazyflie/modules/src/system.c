@@ -73,6 +73,11 @@
 //#include "peer_localization.h"
 #include "cfassert.h"
 
+// EDIT{
+#include "imu_uart.h"
+#include "uart_sync.h"
+//}
+
 #ifndef START_DISARMED
 #define ARM_INIT true
 #else
@@ -219,6 +224,17 @@ void systemTask(void *arg)
   //{
   //  platformSetLowInterferenceRadioMode();
   //}
+
+  // EDIT{
+
+  // Initialise the IMU data transmission via UART
+  imuuartInit();
+
+  // Initialise UART syncing
+  uartsyncInit();
+
+  // }
+
   soundInit();
   memInit();
 
@@ -247,6 +263,22 @@ void systemTask(void *arg)
   DEBUG_PRINTI("soundTest = %d ", pass);
   pass &= memTest();
   DEBUG_PRINTI("memTest = %d ", pass);
+
+  // EDIT{
+
+  // Check if imuuartInit() completed successfully
+  pass &= imuuartTest();
+  
+  // Print the current value of pass
+  DEBUG_PRINTI("imuuartTest = %d ", pass);
+
+  // Check if uartsyncInit() completed successfully
+  pass &= uartsyncTest();
+
+  // Print the current value of pass
+  DEBUG_PRINTI("uartsyncTest = %d ", pass);
+
+  // }
   
   //pass &= watchdogNormalStartTest();
   pass &= cfAssertNormalStartTest();

@@ -35,7 +35,7 @@
 #include "param.h"
 #include "debug_cf.h"
 #include "log.h"
-#include  "wifi_esp32.h"
+#include "wifi_esp32.h"
 #include "wifilink.h"
 #include "platformservice.h"
 #include "crtp_localization_service.h"
