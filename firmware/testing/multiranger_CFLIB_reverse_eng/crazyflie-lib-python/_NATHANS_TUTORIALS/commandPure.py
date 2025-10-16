@@ -39,24 +39,20 @@ def move_box_limit(scf):
                 mc.start_forward()
             time.sleep(0.1)
 
-def hover(scf):
-    print("Take off!")
-    #count  = 0
-    with PositionHlCommander(scf, default_height=DEFAULT_HEIGHT, controller=PositionHlCommander.CONTROLLER_PID) as pc:
-            #time.sleep(2)
-            print("Forwards")
-            pc.forward(1, velocity=0.5)
-            time.sleep(2)
-            print("Right")
-            pc.right(1, velocity=0.5)
-            time.sleep(2)
-            print("Back")
-            pc.back(1, velocity=0.5)
-            time.sleep(2)
-            print("Left")
-            pc.left(1, velocity=0.5)
-            time.sleep(5)
-            #pc.land()
+#def hover(scf):
+    #print("Take off!")
+    #cf = scf.cf
+
+    # for i in range(10):
+    #     cf.commander.send_hover_setpoint(0, 0, 0, i/20) # slowly increase height
+
+    # for i in range(10):
+    #     cf.commander.send_hover_setpoint(0, 0, 0, i/20) # slowly increase height
+
+
+
+
+
 
     
 
@@ -66,10 +62,20 @@ if __name__ == '__main__':
     cflib.crtp.init_drivers()
 
     with SyncCrazyflie(uri, cf=Crazyflie(rw_cache='./cache')) as scf:
-
+        #scf.cf.commander.set_client_xmode(True)
         scf.cf.param.set_value('commander.enHighLevel', '1')
         time.sleep(0.1)
+
+        scf.cf.platform.send_arming_request(True)
         
-        hover(scf)
+        print("start")
+        scf.cf.commander.send_setpoint(0, 0, 0, 0)
+        time.sleep(0.1)
+        print("setpoint")
+        scf.cf.commander.send_setpoint(0, 0, 0, 12000)
+        print("sleep")
+        time.sleep(2)
+        print("stop")
+        scf.cf.commander.send_stop_setpoint()
         
             

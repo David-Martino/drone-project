@@ -16,7 +16,7 @@ from cflib.crazyflie.log import LogConfig
 from cflib.crazyflie.syncLogger import SyncLogger
 
 # Literalyl just change the uri to a udp:// link and it will use the udp driver
-uri = uri_helper.uri_from_env(default='udp://192.168.43.42')
+uri = uri_helper.uri_from_env(default='udp://172.20.10.2')
 
 
 def param_stab_est_callback(name, value):
@@ -106,5 +106,5 @@ if __name__ == '__main__':
 
     with SyncCrazyflie(uri, cf=Crazyflie(rw_cache='./cache')) as scf:
 
-        simple_log(scf, lg_pm)
+        simple_log(scf, lg_state)
 

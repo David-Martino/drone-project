@@ -103,19 +103,18 @@ void commanderNotifySetpointsStop(int remainValidMillisecs)
 
 void commanderGetSetpoint(setpoint_t *setpoint, const state_t *state)
 {
-  xQueuePeek(setpointQueue, setpoint, 0);
+  xQueuePeek(setpointQueue, setpoint, 0); // @@ update the 
   lastUpdate = setpoint->timestamp;
   uint32_t currentTime = xTaskGetTickCount();
 
   if ((currentTime - setpoint->timestamp) > COMMANDER_WDT_TIMEOUT_SHUTDOWN) {
     if (enableHighLevel) {
-      crtpCommanderHighLevelGetSetpoint(setpoint, state);
-      
+      crtpCommanderHighLevelGetSetpoint(setpoint, state); // @@ high level commander ignores shutdown command
     }
     if (!enableHighLevel || crtpCommanderHighLevelIsStopped()) {
-      memcpy(setpoint, &nullSetpoint, sizeof(nullSetpoint));
+      memcpy(setpoint, &nullSetpoint, sizeof(nullSetpoint)); // @@ send null set point to drop the drone out of the sky
     }
-  } else if ((currentTime - setpoint->timestamp) > COMMANDER_WDT_TIMEOUT_STABILIZE) {
+  } else if ((currentTime - setpoint->timestamp) > COMMANDER_WDT_TIMEOUT_STABILIZE) { // @@ Keep the drone stationary 
     xQueueOverwrite(priorityQueue, &priorityDisable);
     
     // Leveling ...

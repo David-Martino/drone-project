@@ -45,5 +45,5 @@
 #endif
 
 #ifndef CF_MASS
-  #define CF_MASS (0.027f) // in kg
+  #define CF_MASS (0.160f) // in kg //@@ MODIFIED FROM 0.027 TO 0.170
 #endif

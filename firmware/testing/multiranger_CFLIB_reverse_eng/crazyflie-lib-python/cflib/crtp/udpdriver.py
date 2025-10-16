@@ -63,7 +63,7 @@ class UdpDriver(CRTPDriver):
 
         self.queue = queue.Queue()
         self.socket = socket(AF_INET, SOCK_DGRAM)
-        self.addr = ('192.168.43.42', 2390) #7777 modify @libo
+        self.addr = ('192.168.43.42', 2390) #7777 modify @libo ('172.20.10.2',2390)#
         self.socket.bind(('', 2399))
         self.socket.connect(self.addr)
         str1=b'\xFF\x01\x01\x01'

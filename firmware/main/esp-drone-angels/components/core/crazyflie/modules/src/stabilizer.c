@@ -55,6 +55,8 @@
 #include "static_mem.h"
 #include "rateSupervisor.h"
 
+#include "obstacle_avoidance.h" // @@ added in 
+
 static bool isInit;
 static bool emergencyStop = false;
 static int emergencyStopTimeout = EMERGENCY_STOP_TIMEOUT_DISABLED;
@@ -293,12 +295,15 @@ static void stabilizerTask(void* param)
       stateEstimator(&state, &sensorData, &control, tick);
       compressState();
 
-      commanderGetSetpoint(&setpoint, &state);
+      commanderGetSetpoint(&setpoint, &state); // @@ fetches the crtp setpoint from the queue
       compressSetpoint();
 
-      sitAwUpdateSetpoint(&setpoint, &sensorData, &state);
-      //collisionAvoidanceUpdateSetpoint(&setpoint, &sensorData, &state, tick);
+      // @@ TODO: Call to the obstacleAvoidanceUpdateSetpoint here
+      obstacleAvoidanceUpdateSetpoint(&setpoint, &state);
 
+      sitAwUpdateSetpoint(&setpoint, &sensorData, &state);
+      //collisionAvoidanceUpdateSetpoint(&setpoint, &sensorData, &state, tick); // @@ this is avoiding collision with other crazyflies, not obstacles
+      
       controller(&control, &setpoint, &sensorData, &state, tick);
 
       checkEmergencyStopTimeout();
