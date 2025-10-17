@@ -1,6 +1,6 @@
 /**
  * @file obstacle_avoidance.c
- * @brief Avoids obstacles, maybe.
+ * @brief Low-level obstacle avoidance from multiranger data and zranger.
  *
  *                  $$$$$$$\            $$\ $$\ $$\
  *                  $$  __$$\           $$ |$$ |$  |
@@ -37,13 +37,17 @@
 #include "stabilizer.h"
 #include "range.h"
 #include "obstacle_avoidance.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "math3d.h"
+// #include "freertos/FreeRTOS.h"
+// #include "freertos/task.h"
+// #include "math3d.h"
+#include "debug_cf.h"
+#define DEBUG_MODULE "LLOA"
+
 
 #define THRESH       200 // was for setpoint based avoidance, now for state based avoidance. TODO: make into a parameter later
 #define THRESH_CRIT  150 // not used. TODO: make into a parameter later
 #define WAIT         3 // [DEPRECATED] time to wait in seconds, drone was going to hover for 3s after each OA event/
+#define MIN_VEL      0.1 // OA will only trigger for v > 0.1
 
 static uint8_t triggered; // State machine variable for OA event (1 = OA avtive, 0 = OA inactive)
 
@@ -107,38 +111,43 @@ void obstacleAvoidanceUpdateSetpoint(setpoint_t *setpoint, state_t *state)
     float vxNew = 0.0f;
     float vyNew = 0.0f; // could store these in vec struct if desired.
     float vzNew = 0.0f;
-
+    
     // x-axis
-    if (vx > 0) {
+    if (vx > MIN_VEL) {
         if (rangeGet(rangeFront) < THRESH) {
-            vxNew = -0.2f; // Move backwards (-x)
+            vxNew = -0.1f; // Move backwards (-x)
+            DEBUG_PRINTI("Front TRIGGERED");
             triggered = 1;
-        };
+        }
     }
-    else if (vx < 0) {
+    else if (vx < -MIN_VEL) {
         if (rangeGet(rangeBack) < THRESH) {
-            vxNew = 0.2f; // Move forwards (+x)
+            vxNew = 0.1f; // Move forwards (+x)
+            DEBUG_PRINTI("back TRIGGERED");
             triggered = 1;
         };
     };
     // y-axis
-    if (vy > 0) {
+    if (vy > MIN_VEL) {
         if (rangeGet(rangeLeft) < THRESH) {
-            vyNew = -0.2f; // Move Right (-y)
+            vyNew = -0.1f; // Move Right (-y)
+            DEBUG_PRINTI("Left TRIGGERED");
             triggered = 1;
         };
     }
-    else if (vy < 0) {
+    else if (vy < -MIN_VEL) {
         if (rangeGet(rangeRight) < THRESH) {
-            vyNew = 0.2f; // Move Left (+y)
+            vyNew = 0.1f; // Move Left (+y)
+            DEBUG_PRINTI("Right TRIGGERED");
             triggered = 1;
 
         };
     };
     // z-axis
-    if (vz > 0) {
+    if (vz > MIN_VEL) {
         if (rangeGet(rangeUp) < THRESH) {
-            vzNew = -0.2f;; // Move Down (-z)
+            vzNew = -0.1f; // Move Down (-z)
+            DEBUG_PRINTI("Up TRIGGERED");
             triggered = 1;
         };
     };

@@ -62,7 +62,7 @@ typedef struct {
 
 typedef VL53L1_Dev_t *VL53L1_DEV;
 
-bool vl53l1xInit(VL53L1_Dev_t *pdev, I2C_Dev *I2cHandle);
+bool vl53l1xInit(VL53L1_Dev_t *pdev, I2C_Dev *I2cHandle, int16_t offset);
 
 bool vl53l1xTestConnection(VL53L1_Dev_t* pdev);
 

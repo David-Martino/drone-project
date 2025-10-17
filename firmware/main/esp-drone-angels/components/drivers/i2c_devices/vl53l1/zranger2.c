@@ -49,6 +49,7 @@ static const float expStdB = 0.2f; // STD at elevation expPointB [m]
 static float expCoeff;
 
 #define RANGE_OUTLIER_LIMIT 5000 // the measured range is in [mm]
+#define ZRANGER2_OFFSET 19
 
 static int16_t range_last = 0;
 
@@ -82,7 +83,7 @@ void zRanger2Init(void)
   if (isInit)
     return;
 
-  if (vl53l1xInit(&dev, I2C1_DEV))
+  if (vl53l1xInit(&dev, I2C1_DEV, ZRANGER2_OFFSET))
   {
     DEBUG_PRINTI("Z-down sensor [OK]\n");
   }

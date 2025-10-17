@@ -10,7 +10,7 @@ from cflib.crazyflie.syncCrazyflie import SyncCrazyflie
 from cflib.positioning.motion_commander import MotionCommander
 from cflib.utils import uri_helper
 
-uri = uri_helper.uri_from_env(default='udp://172.20.10.2')
+uri = uri_helper.uri_from_env(default='udp://192.168.43.42')
 deck_attached_event = Event()
 
 DEFAULT_HEIGHT = 0.5
@@ -45,9 +45,9 @@ def take_off_simple(scf):
         # time.sleep(2)
         # mc.forward(0.5)
         #mc.stop()
-        time.sleep(3)
-        # print("Going Forward")
-        # mc.forward(4, velocity = 0.5)
+        time.sleep(1)
+        print("Going Forward")
+        mc.forward(3, velocity = 0.3)
         # time.sleep(13)
         # time.sleep(3)
         # print("Going Right")
@@ -83,10 +83,10 @@ def take_off_simple(scf):
     
 
 def log_pos_callback(timestamp, data, logconf):
-    print("Height: %d \t Voltage: %d", data['stateEstimate.z'], data['pm.vbat'])
-    position_estimate[0] = data['stateEstimate.x']
-    position_estimate[0] = data['stateEstimate.y']
-
+    #print("Height: %d \t Voltage: %d", data['stateEstimate.z'], data['pm.vbat'])
+    #position_estimate[0] = data['stateEstimate.x']
+    #position_estimate[0] = data['stateEstimate.y']
+    print(data['stateEstimate.z'])
 
 if __name__ == '__main__':
 
@@ -110,12 +110,12 @@ if __name__ == '__main__':
         time.sleep(1.0)
 
         # Logging Init
-        #logconf.start()
+        logconf.start()
 
         # Motion Commands
         take_off_simple(scf)
 
         # Logging Stop
-        #logconf.stop()
+        logconf.stop()
 
         

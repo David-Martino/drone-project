@@ -299,11 +299,11 @@ static void stabilizerTask(void* param)
       compressSetpoint();
 
       // @@ TODO: Call to the obstacleAvoidanceUpdateSetpoint here
-      obstacleAvoidanceUpdateSetpoint(&setpoint, &state);
+      //obstacleAvoidanceUpdateSetpoint(&setpoint, &state);
 
       sitAwUpdateSetpoint(&setpoint, &sensorData, &state);
       //collisionAvoidanceUpdateSetpoint(&setpoint, &sensorData, &state, tick); // @@ this is avoiding collision with other crazyflies, not obstacles
-      
+
       controller(&control, &setpoint, &sensorData, &state, tick);
 
       checkEmergencyStopTimeout();

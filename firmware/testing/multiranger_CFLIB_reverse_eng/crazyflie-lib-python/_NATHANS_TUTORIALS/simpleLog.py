@@ -15,6 +15,14 @@ from cflib.utils import uri_helper
 from cflib.crazyflie.log import LogConfig
 from cflib.crazyflie.syncLogger import SyncLogger
 
+import matplotlib
+matplotlib.use("QtAgg")
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.animation import FuncAnimation
+from collections import deque
+
+
 # Literalyl just change the uri to a udp:// link and it will use the udp driver
 uri = uri_helper.uri_from_env(default='udp://172.20.10.2')
 
@@ -61,10 +69,38 @@ def simple_log(scf, logconf):
 
             #break # what we breaking for tho
 
-def simple_connect():
-    print("Oh yeah, heck yeah, let's gooo, I'm connected")
-    time.sleep(3)
-    print("Imma head out")
+def plot_position(scf, logconf):
+        x = deque(maxlen=500)
+        y = deque(maxlen=500)
+        plt.ion()
+        fig = plt.figure()
+        plt.plot(x,y)
+        plt.show()
+        ax = fig.add_subplot(111)
+        line, = ax.plot(x, y, 'b-')
+        plt.xlim(-2,2)
+        plt.ylim(-2,2)
+
+        with SyncLogger(scf, logconf) as logger:
+            for log_entry in logger:
+                data = log_entry[1]
+
+                xNew = data["stateEstimate.x"]
+                yNew = data["stateEstimate.y"]
+                # print(f"({xNew},{yNew})")
+                x.append(data["stateEstimate.x"])
+                y.append(data["stateEstimate.y"])
+                
+                # print(f"({x},{y})")
+                line.set_data(x,y)
+                fig.canvas.draw()
+                fig.canvas.flush_events()
+
+            #break # what we breaking for tho
+        
+
+
+
 
 if __name__ == '__main__':
     # Initialize low-level dri
@@ -104,7 +140,9 @@ if __name__ == '__main__':
     group = "stabilizer"
     name = "estimator"
 
+    
+
     with SyncCrazyflie(uri, cf=Crazyflie(rw_cache='./cache')) as scf:
 
-        simple_log(scf, lg_state)
+        simple_log(scf, lg_range)
 

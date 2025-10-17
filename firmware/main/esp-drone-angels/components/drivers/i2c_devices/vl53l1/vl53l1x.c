@@ -44,6 +44,7 @@
 #define VL53L1X_ERROR_CONTROL_INTERFACE 14 // @@ this is NOT from ULD, its an artefact of the OG driver
 #include "debug_cf.h"
 
+#define CALIB
 #ifdef PAL_EXTENDED
 //	#include "vl53l1_register_strings.h" // @@ not ULD
 #else
@@ -66,7 +67,7 @@ int rd_write_verification( VL53L1_Dev_t *dev, uint16_t addr, uint32_t expected_v
 
 // @@ Initialisation follows the UM https://www.st.com/resource/en/user_manual/um2510-a-guide-to-using-the-vl53l1x-ultra-lite-driver-stmicroelectronics.pdf
 // @@ and some of the 2D_Lidar example (https://www.st.com/en/embedded-software/stsw-img017.html),
-bool vl53l1xInit(VL53L1_Dev_t *pdev, I2C_Dev *I2cHandle)
+bool vl53l1xInit(VL53L1_Dev_t *pdev, I2C_Dev *I2cHandle, int16_t offset)
 {
   uint8_t status = 0;
   uint8_t Bootstate = 0;
@@ -100,7 +101,7 @@ bool vl53l1xInit(VL53L1_Dev_t *pdev, I2C_Dev *I2cHandle)
 	if (status == 0) {
 		status = vl53l1xSetI2CAddress(pdev,newAddress); //@@ set new I2C address
 		DEBUG_PRINTI("VL53L1 Address to %x [Status: %d], and pdev->i2cDevAddr = %x\n", newAddress, status, pdev->I2cDevAddr); // @@DEBUG
-
+		
 		// @@ Just checking ID registers (stock espdrone) (DEBUG)
 		uint8_t byteData;
 		uint16_t wordData;
@@ -110,6 +111,37 @@ bool vl53l1xInit(VL53L1_Dev_t *pdev, I2C_Dev *I2cHandle)
 		DEBUG_PRINTI( "VL53L1X Module_Type: %02X\n\r", byteData);
 		VL53L1_RdWord(pdev->I2cDevAddr, 0x010F, &wordData);
 		DEBUG_PRINTI( "VL53L1X: %02X\n\r", wordData);
+
+
+		/** Configure Device Params */
+
+		VL53L1X_SetOffset(pdev->I2cDevAddr, offset);
+
+		/** Set ROI to avoid prop guard interference (16x16 -> 4x4)
+		 * You can adjust the center as well but seems not necessary
+		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+		 * |_|_|_|_|_|_|x|x|x|x|_|_|_|_|_|_|
+		 * |_|_|_|_|_|_|x|x|x|x|_|_|_|_|_|_|
+		 * |_|_|_|_|_|_|x|x|x|x|_|_|_|_|_|_|
+		 * |_|_|_|_|_|_|x|x|x|x|_|_|_|_|_|_|
+		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+		 * */ 
+
+		// status = VL53L1X_SetROI(pdev->I2cDevAddr, 8, 8);
+		//status = VL53L1X_SetROICenter(pdev->I2cDevAddr, )
+
+
+
 	}
 	
   }

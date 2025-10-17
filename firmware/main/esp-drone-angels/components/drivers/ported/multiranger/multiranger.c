@@ -62,13 +62,19 @@ static uint16_t filterMask = 0x01; // @@ this is used to check if the data was v
 #define MR_PIN_LEFT PCA95X4_P1 //@@ PCA95X4_P6
 #define MR_PIN_RIGHT PCA95X4_P4 //@@ PCA95X4_P2
 
+#define MR_OFFSET_UP    19  // @@ offsets in mm (from calibrated data)
+#define MR_OFFSET_FRONT 37
+#define MR_OFFSET_BACK  -15
+#define MR_OFFSET_LEFT  17
+#define MR_OFFSET_RIGHT 2
+
 NO_DMA_CCM_SAFE_ZERO_INIT static VL53L1_Dev_t devFront; //@@ these are the addresses of the devices now
 NO_DMA_CCM_SAFE_ZERO_INIT static VL53L1_Dev_t devBack;
 NO_DMA_CCM_SAFE_ZERO_INIT static VL53L1_Dev_t devUp;
 NO_DMA_CCM_SAFE_ZERO_INIT static VL53L1_Dev_t devLeft;
 NO_DMA_CCM_SAFE_ZERO_INIT static VL53L1_Dev_t devRight;
 
-static bool mrInitSensor(VL53L1_Dev_t *pdev, uint32_t pca95pin, char *name)
+static bool mrInitSensor(VL53L1_Dev_t *pdev, uint32_t pca95pin, char *name, int16_t offset)
 {
     bool status;
     uint8_t xshut_pins; // @@DEBUG
@@ -85,7 +91,7 @@ static bool mrInitSensor(VL53L1_Dev_t *pdev, uint32_t pca95pin, char *name)
     // Let VL53 boot
     vTaskDelay(M2T(2)); 
     // Init VL53
-    if (vl53l1xInit(pdev, I2C1_DEV)) //@@ is not finding the func?
+    if (vl53l1xInit(pdev, I2C1_DEV, offset)) //@@ is not finding the func?
     {
         DEBUG_PRINTI("Init %s sensor [OK]\n", name); // @@ original: DEBUG_PRINT
         status = true;
@@ -223,11 +229,11 @@ bool mrTest()
     isPassed = isInit;
 
     isPassed &= pca95x4Test(PCA95X4_DEFAULT_ADDRESS); // @@ 
-    isPassed &= mrInitSensor(&devFront, MR_PIN_FRONT, "front");
-    isPassed &= mrInitSensor(&devBack, MR_PIN_BACK, "back");
-    isPassed &= mrInitSensor(&devUp, MR_PIN_UP, "up");
-    isPassed &= mrInitSensor(&devLeft, MR_PIN_LEFT, "left"); // @@ isPassed &= mrInitSensor(&devLeft, MR_PIN_LEFT, "left");
-    isPassed &= mrInitSensor(&devRight, MR_PIN_RIGHT, "right");// @@ isPassed &= mrInitSensor(&devRight, MR_PIN_RIGHT, "right");
+    isPassed &= mrInitSensor(&devFront, MR_PIN_FRONT, "front", MR_OFFSET_FRONT);
+    isPassed &= mrInitSensor(&devBack, MR_PIN_BACK, "back", MR_OFFSET_BACK);
+    isPassed &= mrInitSensor(&devUp, MR_PIN_UP, "up", MR_OFFSET_UP);
+    isPassed &= mrInitSensor(&devLeft, MR_PIN_LEFT, "left", MR_OFFSET_LEFT); // @@ isPassed &= mrInitSensor(&devLeft, MR_PIN_LEFT, "left");
+    isPassed &= mrInitSensor(&devRight, MR_PIN_RIGHT, "right", MR_OFFSET_RIGHT);// @@ isPassed &= mrInitSensor(&devRight, MR_PIN_RIGHT, "right");
 
     isTested = true;
 
