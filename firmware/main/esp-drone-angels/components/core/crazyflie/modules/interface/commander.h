@@ -36,8 +36,10 @@
 #define COMMANDER_WDT_TIMEOUT_SHUTDOWN   M2T(2000)
 
 #define COMMANDER_PRIORITY_DISABLE 0
-#define COMMANDER_PRIORITY_CRTP    1
-#define COMMANDER_PRIORITY_EXTRX   2
+#define COMMANDER_PRIORITY_LOWEST    1 // @@ added
+#define COMMANDER_PRIORITY_HIGHLEVEL 1 // @@ added
+#define COMMANDER_PRIORITY_CRTP    2 // @@ this was 1 before
+#define COMMANDER_PRIORITY_EXTRX   3 // @@ this was 2 before
 
 void commanderInit(void);
 bool commanderTest(void);
@@ -45,6 +47,8 @@ uint32_t commanderGetInactivityTime(void);
 
 void commanderSetSetpoint(setpoint_t *setpoint, int priority);
 int commanderGetActivePriority(void);
+
+void commanderRelaxPriority(void);
 
 /* Inform the commander that streaming setpoints are about to stop.
  * Parameter controls the amount of time the last setpoint will remain valid.

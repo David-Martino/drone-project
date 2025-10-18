@@ -42,12 +42,15 @@ def take_off_simple(scf):
     print("Take off!")
     #count  = 0
     with MotionCommander(scf, default_height=DEFAULT_HEIGHT) as mc:
-        # time.sleep(2)
+        time.sleep(3)
         # mc.forward(0.5)
         #mc.stop()
-        time.sleep(1)
-        print("Going Forward")
-        mc.forward(3, velocity = 0.3)
+        # time.sleep(1)
+        print("Going in a Circle")
+        mc.circle_right(1)
+        #mc.forward(5, velocity = 0.5)
+
+        #mc.forward(3, velocity = 0.5)
         # time.sleep(13)
         # time.sleep(3)
         # print("Going Right")

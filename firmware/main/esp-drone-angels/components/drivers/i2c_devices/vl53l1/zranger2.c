@@ -49,7 +49,7 @@ static const float expStdB = 0.2f; // STD at elevation expPointB [m]
 static float expCoeff;
 
 #define RANGE_OUTLIER_LIMIT 5000 // the measured range is in [mm]
-#define ZRANGER2_OFFSET 19
+#define ZRANGER2_OFFSET 0 //19 @@ TODO - Re-enable with bigger ROI
 
 static int16_t range_last = 0;
 

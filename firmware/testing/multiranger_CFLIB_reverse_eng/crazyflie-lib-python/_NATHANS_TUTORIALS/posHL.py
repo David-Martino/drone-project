@@ -43,11 +43,11 @@ def hover(scf):
     print("Take off!")
     #count  = 0
     with PositionHlCommander(scf, default_height=DEFAULT_HEIGHT, controller=PositionHlCommander.CONTROLLER_PID) as pc:
-            # time.sleep(5)
+            time.sleep(3)
             #pc.go_to(0,0)
-            time.sleep(40)
-            #print("Forwards")
-            #pc.forward(3, velocity=0.3)
+            # time.sleep(40)
+            print("Forwards")
+            pc.forward(3, velocity=0.3)
             # time.sleep(2)
             # print("Right")
             # pc.right(1, velocity=0.5)

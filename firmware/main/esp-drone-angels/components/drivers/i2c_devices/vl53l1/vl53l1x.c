@@ -137,7 +137,7 @@ bool vl53l1xInit(VL53L1_Dev_t *pdev, I2C_Dev *I2cHandle, int16_t offset)
 		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
 		 * */ 
 
-		// status = VL53L1X_SetROI(pdev->I2cDevAddr, 8, 8);
+		status = VL53L1X_SetROI(pdev->I2cDevAddr, 8, 8);
 		//status = VL53L1X_SetROICenter(pdev->I2cDevAddr, )
 
 

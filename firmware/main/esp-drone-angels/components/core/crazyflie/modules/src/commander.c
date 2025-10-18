@@ -101,6 +101,14 @@ void commanderNotifySetpointsStop(int remainValidMillisecs)
   crtpCommanderHighLevelTellState(&lastState);
 }
 
+// @@ ADDED FOR THE OA TO RELINQUISH COMMAND BACK TO HL IF USED
+void commanderRelaxPriority()
+{
+  crtpCommanderHighLevelTellState(&lastState);
+  int priority = COMMANDER_PRIORITY_LOWEST;
+  xQueueOverwrite(priorityQueue, &priority);
+}
+
 void commanderGetSetpoint(setpoint_t *setpoint, const state_t *state)
 {
   xQueuePeek(setpointQueue, setpoint, 0); // @@ update the 

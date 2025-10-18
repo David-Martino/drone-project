@@ -25,6 +25,8 @@
  * 
  * This module sends a hover setpoint if the range to an obstacle
  * in the direction of motion is less than some threshold.
+ * 
+ * Does NOT account for edge case of obstacles either side of drone simultaneously.
  *
  * @author Nathan Mayhew <23065159@student.uwa.edu.au>
  * @date 12 October 2025
@@ -37,24 +39,49 @@
 #include "stabilizer.h"
 #include "range.h"
 #include "obstacle_avoidance.h"
-// #include "freertos/FreeRTOS.h"
-// #include "freertos/task.h"
-// #include "math3d.h"
 #include "debug_cf.h"
+#include "commander.h"
+
 #define DEBUG_MODULE "LLOA"
 
+/** Hysteresis:
+ * 
+ * /|           :      :
+ * /|           :      :    
+ * /|           :      :
+ * /|           :      :
+ * /|           :      :
+ *      THRESH    DHYST
+ * 
+ * Trigger if range < thresh
+ * Detrigger if range > thresh + dhyst
+ * 
+ */
 
-#define THRESH       200 // was for setpoint based avoidance, now for state based avoidance. TODO: make into a parameter later
-#define THRESH_CRIT  150 // not used. TODO: make into a parameter later
-#define WAIT         3 // [DEPRECATED] time to wait in seconds, drone was going to hover for 3s after each OA event/
-#define MIN_VEL      0.1 // OA will only trigger for v > 0.1
-
+#define THRESH       300 // was for setpoint based avoidance, now for state based avoidance. TODO: make into a parameter later
+#define DHYST        50 // Hysteresis distance 
+#define MIN_VEL      0.1f // OA will only trigger for v > 0.1
+#define RUN_VEL      0.1f // Speed to back away from object
 static uint8_t triggered; // State machine variable for OA event (1 = OA avtive, 0 = OA inactive)
 
 void obstacleAvoidanceSetVelSetpoint(setpoint_t *setpoint, float vx, float vy, float vz);
+uint8_t obstacleAvoidanceRangeVelocityCheck(uint8_t *threats, uint32_t limit, float vx, float vy, float vz);
+uint8_t obstacleAvoidanceRangeCheck(uint8_t *threats, uint32_t limit);
 
+/**
+ * @brief checks for obstacles and will set setpoint to back away if needed
+ * @param setpoint pointer to setpoint that will be passed into controller
+ * @param state pointer to state output from estimator. Must have a velocity estimate
+ */
 void obstacleAvoidanceUpdateSetpoint(setpoint_t *setpoint, state_t *state) 
 {
+
+    float vxNew = 0.0f;
+    float vyNew = 0.0f; // could store these in vec struct if desired.
+    float vzNew = 0.0f;
+    
+    uint8_t threats[5];  // [F, B, L, R, U] Down excluded. Cannot use an enum since multiple objects could be detected (in theory)
+
     /*       Data collection         */
 
     /**
@@ -73,30 +100,10 @@ void obstacleAvoidanceUpdateSetpoint(setpoint_t *setpoint, state_t *state)
 
     // Get state velocity data -- for *detective* avoidance
     float vx = state->velocity.x;
-    float vy = state->velocity.y;
+    float vy = state->velocity.y; 
     float vz = state->velocity.z;
 
-    // Get setpoint data -- for *preventative* avoidance [DEPRECATED. I DON'T HAVE TIME TO UNDERSTAND THE TRANSFORMATION AND THAT MAKES IT TOO UNRELIABLE]
-    // first check that the velocity is in the body frame.
-    // if (setpoint->velocity_body) {
-    //     float vx = setpoint->velocity.x;
-    //     float vy = setpoint->velocity.y; 
-    //     float vz = setpoint->velocity.z;
-    // }
-    // else {
-    //     // Convert to body frame of reference:
-    //     struct quat q = state.attitudeQuaternion;
-    //     struct quat q_inv = {.x = -q.x, .y = -q.y, .z = -q.z, .w = q.w};
-
-    //     struct vec v_body = qvrot(q_inv, setpoint->velocity);
-    //     float vx = v_body.x;
-    //     float vy = v_body.y; 
-    //     float vz = v_body.z;
-    // };
-
-
-
-    /*                  OA Decision Making                 */
+    /*                  OA State Machine                */
 
     /**
      * vxNew, vyNew, vzNew will become the new velocities if an object is detected.
@@ -108,49 +115,90 @@ void obstacleAvoidanceUpdateSetpoint(setpoint_t *setpoint, state_t *state)
      * disabled as soon as a non-HL command is sent
      */
 
-    float vxNew = 0.0f;
-    float vyNew = 0.0f; // could store these in vec struct if desired.
-    float vzNew = 0.0f;
-    
-    // x-axis
-    if (vx > MIN_VEL) {
-        if (rangeGet(rangeFront) < THRESH) {
-            vxNew = -0.1f; // Move backwards (-x)
-            DEBUG_PRINTI("Front TRIGGERED");
-            triggered = 1;
-        }
-    }
-    else if (vx < -MIN_VEL) {
-        if (rangeGet(rangeBack) < THRESH) {
-            vxNew = 0.1f; // Move forwards (+x)
-            DEBUG_PRINTI("back TRIGGERED");
-            triggered = 1;
-        };
-    };
-    // y-axis
-    if (vy > MIN_VEL) {
-        if (rangeGet(rangeLeft) < THRESH) {
-            vyNew = -0.1f; // Move Right (-y)
-            DEBUG_PRINTI("Left TRIGGERED");
-            triggered = 1;
-        };
-    }
-    else if (vy < -MIN_VEL) {
-        if (rangeGet(rangeRight) < THRESH) {
-            vyNew = 0.1f; // Move Left (+y)
-            DEBUG_PRINTI("Right TRIGGERED");
+    if (triggered) {
+        if (obstacleAvoidanceRangeCheck(threats, THRESH+DHYST)) {
+            // Update state variable (stays the same so not necessary here)
             triggered = 1;
 
+            // Build velocity vector command
+            if (threats[0]) {vxNew = -RUN_VEL;}; // Front
+            if (threats[1]) {vxNew = RUN_VEL;};  // Back
+            if (threats[2]) {vyNew = -RUN_VEL;}; // Left
+            if (threats[3]) {vyNew = RUN_VEL;};  // Right
+            if (threats[4]) {vzNew = -RUN_VEL;}; // Up
+
+            // Set velocity setpoint
+            obstacleAvoidanceSetVelSetpoint(setpoint, vxNew, vyNew, vzNew);  
+        }
+        else {
+            // Update State Variable
+            triggered = 0;
+            
+            // Set hover setpoint
+            obstacleAvoidanceSetVelSetpoint(setpoint, 0, 0, 0); // Send hover setpoint
+
+            //
+            commanderRelaxPriority();
         };
-    };
-    // z-axis
-    if (vz > MIN_VEL) {
-        if (rangeGet(rangeUp) < THRESH) {
-            vzNew = -0.1f; // Move Down (-z)
-            DEBUG_PRINTI("Up TRIGGERED");
+    }
+    else {
+        if (obstacleAvoidanceRangeVelocityCheck(threats, THRESH, vx, vy, vz)) {
+            // Update State variable
             triggered = 1;
+
+            //build velocity vector from threats
+            if (threats[0]) {vxNew = -RUN_VEL;}; // Front
+            if (threats[1]) {vxNew = RUN_VEL;};  // Back
+            if (threats[2]) {vyNew = -RUN_VEL;}; // Left
+            if (threats[3]) {vyNew = RUN_VEL;};  // Right
+            if (threats[4]) {vzNew = -RUN_VEL;}; // Up
+
+            // Send velocity setpoint
+            obstacleAvoidanceSetVelSetpoint(setpoint, vxNew, vyNew, vzNew);
         };
     };
+
+
+
+    // x-axis
+    // if (vx > MIN_VEL) {
+    //     if (rangeGet(rangeFront) < THRESH) {
+    //         vxNew = -0.1f; // Move backwards (-x)
+    //         DEBUG_PRINTI("Front TRIGGERED");
+    //         triggered = 1;
+    //     }
+    // }
+    // else if (vx < -MIN_VEL) {
+    //     if (rangeGet(rangeBack) < THRESH) {
+    //         vxNew = 0.1f; // Move forwards (+x)
+    //         DEBUG_PRINTI("back TRIGGERED");
+    //         triggered = 1;
+    //     };
+    // };
+    // // y-axis
+    // if (vy > MIN_VEL) {
+    //     if (rangeGet(rangeLeft) < THRESH) {
+    //         vyNew = -0.1f; // Move Right (-y)
+    //         DEBUG_PRINTI("Left TRIGGERED");
+    //         triggered = 1;
+    //     };
+    // }
+    // else if (vy < -MIN_VEL) {
+    //     if (rangeGet(rangeRight) < THRESH) {
+    //         vyNew = 0.1f; // Move Left (+y)
+    //         DEBUG_PRINTI("Right TRIGGERED");
+    //         triggered = 1;
+
+    //     };
+    // };
+    // // z-axis
+    // if (vz > MIN_VEL) {
+    //     if (rangeGet(rangeUp) < THRESH) {
+    //         vzNew = -0.1f; // Move Down (-z)
+    //         DEBUG_PRINTI("Up TRIGGERED");
+    //         triggered = 1;
+    //     };
+    // };
     
 
     /*          Take OA Action              */
@@ -169,21 +217,29 @@ void obstacleAvoidanceUpdateSetpoint(setpoint_t *setpoint, state_t *state)
     * but this implementation should guarantee that the drone stops moving if no further commands
     * are being sent.
     */
-    if ((vxNew != 0.0f) || (vyNew != 0.0f) || (vzNew != 0.0f)) {
+    // if ((vxNew != 0.0f) || (vyNew != 0.0f) || (vzNew != 0.0f)) {
 
-        obstacleAvoidanceSetVelSetpoint(setpoint, vxNew, vyNew, vzNew);
+    //     obstacleAvoidanceSetVelSetpoint(setpoint, vxNew, vyNew, vzNew);
         
-        triggered = 1;
-    }
-    else {
-        if (triggered == 1) {
-            obstacleAvoidanceSetVelSetpoint(setpoint, 0.0f, 0.0f, 0.0f); // could just pass in vxNew, etc because they should already be zero.
-        };
+    //     triggered = 1;
+    // }
+    // else {
+    //     if (triggered == 1) {
+    //         obstacleAvoidanceSetVelSetpoint(setpoint, 0.0f, 0.0f, 0.0f); // could just pass in vxNew, etc because they should already be zero.
+    //     };
 
-        triggered = 0;
-    };
+    //     triggered = 0;
+    // };
 }
 
+
+/** 
+ * @brief Creates velocity setpoint based on input velocity vector
+ * @param setpoint pointer to the setpoint structure being passed to the controller
+ * @param vx state x velocity (m/s)
+ * @param vy state y velocity (m/s)
+ * @param vz state z velocity (m/s)
+ */
 void obstacleAvoidanceSetVelSetpoint(setpoint_t *setpoint, float vx, float vy, float vz)
 {
     setpoint->mode.x = modeVelocity;
@@ -198,3 +254,92 @@ void obstacleAvoidanceSetVelSetpoint(setpoint_t *setpoint, float vx, float vy, f
 
     // I don't think I even need to relinquish command back to the high level commander? since I am operating on the setpoint after commander framework anyway.
 }
+
+/** 
+ * @brief Checks all directions for object
+ * @return 1 if triggered, 0 if not triggered
+ * @param threats pointer to array storing which direction has been triggered in the order [Front, Back, Left, Right, Up]
+ * @param limit any ranges below this will get triggered
+ * @param vx state x velocity (m/s)
+ * @param vy state y velocity (m/s)
+ * @param vz state z velocity (m/s)
+ */
+uint8_t obstacleAvoidanceRangeVelocityCheck(uint8_t *threats, uint32_t limit, float vx, float vy, float vz) {
+    uint8_t localTriggered = 0;
+
+    // x-axis
+    if (vx > MIN_VEL) {
+        if (rangeGet(rangeFront) < limit) {
+            threats[0] = 1;
+            localTriggered = 1;
+        };
+    }
+    else if (vx < -MIN_VEL) {
+        if (rangeGet(rangeBack) < limit) {
+            threats[1] = 1;
+            localTriggered = 1;
+        };
+    };
+    // y-axis
+    if (vy > MIN_VEL) {
+        if (rangeGet(rangeLeft) < limit) {
+            threats[2] = 1;
+            localTriggered = 1;
+        };
+    }
+    else if (vy < -MIN_VEL) {
+        if (rangeGet(rangeRight) < limit) {
+            threats[3] = 1;
+            localTriggered = 1;
+
+        };
+    };
+    // z-axis
+    if (vz > MIN_VEL) {
+        if (rangeGet(rangeUp) < limit) {
+            threats[4] = 1;
+            localTriggered = 1;
+        };
+    };
+
+    return localTriggered;
+};
+
+/** 
+ * @brief Checks all directions for object and 
+ * @return 1 if triggered, 0 if not triggered
+ * @param threats pointer to array storing which direction has been triggered in the order [Front, Back, Left, Right, Up]
+ * @param limit any ranges below this will get triggered
+ */
+uint8_t obstacleAvoidanceRangeCheck(uint8_t *threats, uint32_t limit) {
+    uint8_t localTriggered = 0;
+
+    // x-axis
+    if (rangeGet(rangeFront) < limit) {
+        threats[0] = 1;
+        localTriggered = 1;
+    };
+    if (rangeGet(rangeBack) < limit) {
+        threats[1] = 1;
+        localTriggered = 1;
+    };
+
+    // y-axis
+    if (rangeGet(rangeLeft) < limit) {
+        threats[2] = 1;
+        localTriggered = 1;
+    };
+    if (rangeGet(rangeRight) < limit) {
+        threats[3] = 1;
+        localTriggered = 1;
+
+    };
+
+    // z-axis
+    if (rangeGet(rangeUp) < limit) {
+        threats[4] = 1;
+        localTriggered = 1;
+    };
+
+    return localTriggered;
+};
