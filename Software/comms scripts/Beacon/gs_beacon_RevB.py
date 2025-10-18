@@ -26,7 +26,7 @@ def ip_of_iface(ifname: str) -> str | None:
         return None
 
 def default_route_ip() -> str | None:
-    """Classic UDP connect trick; returns None if no default route yet."""
+    
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
