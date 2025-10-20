@@ -1,0 +1,46 @@
+/**
+ * @file obstacle_avoidance.c
+ * @brief Avoids obstacles, maybe.
+ *
+ *                  $$$$$$$\            $$\ $$\ $$\
+ *                  $$  __$$\           $$ |$$ |$  |
+ *                  $$ |  $$ | $$$$$$\  $$ |$$ |\_/$$$$$$$\
+ *                  $$ |  $$ |$$  __$$\ $$ |$$ |  $$  _____|
+ *                  $$ |  $$ |$$$$$$$$ |$$ |$$ |  \$$$$$$\
+ *                  $$ |  $$ |$$   ____|$$ |$$ |   \____$$\
+ *                  $$$$$$$  |\$$$$$$$\ $$ |$$ |  $$$$$$$  |
+ *                  \_______/  \_______|\__|\__|  \_______/
+ *
+ *            $$$$$$\                                $$\
+ *           $$  __$$\                               $$ |
+ *           $$ /  $$ |$$$$$$$\   $$$$$$\   $$$$$$\  $$ | $$$$$$$\
+ *           $$$$$$$$ |$$  __$$\ $$  __$$\ $$  __$$\ $$ |$$  _____|
+ *           $$  __$$ |$$ |  $$ |$$ /  $$ |$$$$$$$$ |$$ |\$$$$$$\
+ *           $$ |  $$ |$$ |  $$ |$$ |  $$ |$$   ____|$$ | \____$$\
+ *           $$ |  $$ |$$ |  $$ |\$$$$$$$ |\$$$$$$$\ $$ |$$$$$$$  |
+ *           \__|  \__|\__|  \__| \____$$ | \_______|\__|\_______/
+ *                               $$\   $$ |
+ *                               \$$$$$$  |
+ *                                \______/
+ * 
+ * This module sends a hover setpoint if the range to an obstacle
+ * in the direction of motion is less than some threshold.
+ *
+ * @author Nathan Mayhew <23065159@student.uwa.edu.au>
+ * @date 12 October 2025
+ * 
+ * @copyright
+ *   © 2025 Nathan Mayhew
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, in version 3.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
