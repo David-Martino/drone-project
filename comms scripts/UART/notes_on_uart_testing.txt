@@ -90,3 +90,37 @@ Notes on UART testing
 	sudo ./venv-uart/bin/python3 discovery.py
 	"""
 
+
+Note: actual drone's ESP32-S3 MAC address = D0:CF:13:31:1A:E8
+Note: Erwin's dev board MAC address = 80:B5:4E:C6:A0:0C
+
+
+1. Clone `https://github.com/jobitjoseph/crazyflie-lib-python` and navigate there.
+
+1. Create a venv there and editable-install with:
+
+	"""
+	python3 -m venv venv-udp
+	source venv-udp/bin/activate
+	python3 -m pip install --upgrade pip wheel setuptools
+	python3 -m pip install -e .
+	pip show cflib
+	#	Should show cflib-0.1.27.1.dev0
+	"""
+
+1. Run the various scripts in test-scripts from that venv.
+
+1. On ground station (with both on hotspot), navigate to uart_receiver.py and copy to Pi with:
+
+	"""
+	scp uart_receiver.py erwin@raspberrypi.local:/home/erwin/
+	#	Enter password: 12345678
+	#	Obvs change to match your device
+	"""
+
+1. On the Pi, activate the venv and run the script with:
+
+	"""
+	source ~/venv-serial/bin/activate
+	python3 uart_receiver.py
+	"""

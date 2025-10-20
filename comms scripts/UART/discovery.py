@@ -6,7 +6,7 @@ import netifaces as ni
 import sys
 
 # ---- CONFIG ----
-DRONE_MAC = "D0:CF:13:31:1A:E9".lower()   # hardcode your drone's STA MAC here
+DRONE_MAC = "80:B5:4E:C6:A0:0C".lower()   # hardcode your drone's STA MAC here
 IFACE     = ""                       # set to your Wi-Fi iface, or ""/None to auto-pick
 TIMEOUT_S = 2.0                           # ARP scan timeout
 # ---------------
