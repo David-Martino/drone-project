@@ -304,20 +304,18 @@ static void stabilizerTask(void* param)
       commanderGetSetpoint(&setpoint, &state); // Fetches the CRTP setpoint from the queue
       compressSetpoint();
 
-      //emergencyStop = pmEmergencyLand(&setpoint); // Emergency landing action. Set to 1 once landed @@ 
+      emergencyStop = pmEmergencyLand(&setpoint, &state); // Emergency landing action. returns 1 once landed @@ 
 
-      //obstacleAvoidanceUpdateSetpoint(&setpoint, &state); // Obstacle Avoidance action @@
+      obstacleAvoidanceUpdateSetpoint(&setpoint, &state); // Obstacle Avoidance action @@
 
       sitAwUpdateSetpoint(&setpoint, &sensorData, &state); // Pitch limit / tumble detection (Crazyflie module)
 
       controller(&control, &setpoint, &sensorData, &state, tick); // Map a setpoint to a Thrust, Roll, Pitch, Yaw control command
-
-      //controller(&control, &setpoint, &sensorData, &state, tick);
       
       checkEmergencyStopTimeout();
 
       checkStops = systemIsArmed();
-      if (emergencyStop || (systemIsArmed() == false)) {
+      if (emergencyStop || (systemIsArmed() == false)) { // I am so fucking dumb, its an OR condition and I wasn't changing the Armed condition
         powerStop();
         //DEBUG_PRINTE("OFF");
       } else {

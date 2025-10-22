@@ -105,7 +105,7 @@ void systemLaunch(void)
   STATIC_MEM_TASK_CREATE(systemTask, systemTask, SYSTEM_TASK_NAME, NULL, SYSTEM_TASK_PRI);
 }
 
-// @@REMOVE!! custom function. Has to be the first thing called during Main.
+// @@ custom function. Has to be the first thing called during Main.
 void systemSetMotorsLow(void)
 {
     // @@ Set motor pins to be low during initialisation.

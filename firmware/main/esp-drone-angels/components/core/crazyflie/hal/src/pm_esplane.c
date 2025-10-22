@@ -48,6 +48,7 @@
 #include "range.h" // @@ 
 #include "stabilizer.h" // @@
 #include "param.h"
+
 #define OFF_DIST 50 // @@ distance (mm) to ground at which motors are turned off.
 #define DESCEND_SPEED  0.3 // @@ emergency landing speed (m/s)
 //#include "deck.h"
@@ -330,25 +331,26 @@ bool pmIsDischarging(void)
  * @param setpoint setpoint structure that is being passed to controller
  * @return 1 if emergency landing complete, 0 otherwise
  */
-bool pmEmergencyLand(setpoint_t *setpoint) {
+bool pmEmergencyLand(setpoint_t *setpoint, state_t *state) {
 
   if (criticalFlag) {
-    uint16_t zheight = rangeGet(rangeDown); // Determine current distance to floor
-    if (zheight > OFF_DIST) { // if greater than 50mm from the floor, continue sending a DESCEND setpoint
-      setpoint->mode.x = modeVelocity;
-      setpoint->mode.y = modeVelocity;
+    if (state->position.z > OFF_DIST) { // if greater than 50mm from the floor, continue sending a DESCEND setpoint
+      setpoint->mode.x = modeAbs;
+      setpoint->mode.y = modeAbs;
       setpoint->mode.z = modeVelocity;
       setpoint->mode.roll = modeDisable;
       setpoint->mode.pitch = modeDisable;
       setpoint->mode.yaw = modeDisable;
-      setpoint->velocity.x = 0;
-      setpoint->velocity.y = 0;
+      setpoint->velocity.x = state->position.x; // maintain x-y position
+      setpoint->velocity.y = state->position.y;
       setpoint->velocity.z = -DESCEND_SPEED;
       //DEBUG_PRINTI("Landing");
     }
     else {
       //DEBUG_PRINTI("Landing complete");
       landed = true; // Emergency Landing complete, shut down power.
+
+      systemSetArmed(false);
     }
   };
   

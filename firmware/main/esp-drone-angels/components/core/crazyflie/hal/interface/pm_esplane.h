@@ -188,7 +188,7 @@ float pmMeasureExtBatteryCurrent(void);
  * @param setpoint setpoint structure that is being passed to controller
  * @return 1 if emergency landing complete, 0 otherwise
  */
-bool pmEmergencyLand(setpoint_t *setpoint);
+bool pmEmergencyLand(setpoint_t *setpoint, state_t *state);
 
 /** @@ 
  * @brief Set critical flag (used by other emergency controllers, eg commander timeout watchdog) 
