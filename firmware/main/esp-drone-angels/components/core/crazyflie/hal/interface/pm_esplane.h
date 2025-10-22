@@ -21,6 +21,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * Modifications: 
+ *    Copyright (C) 2025 Nathan Mayhew
+ *      - Added emergency landing and critical flag system
  *
  * pm_esplane.h - Power Management driver and functions.
  */
@@ -31,10 +35,11 @@
 #include "esp_idf_version.h"
 #include "syslink.h"
 #include "driver/adc.h"
+#include "stabilizer.h" // @@
 //#include "deck.h"
 
 #ifndef CRITICAL_LOW_VOLTAGE
-  #define PM_BAT_CRITICAL_LOW_VOLTAGE  6.0f //@@ original 3.0f
+  #define PM_BAT_CRITICAL_LOW_VOLTAGE  6.4f //@@ original 3.0f
 #else
   #define PM_BAT_CRITICAL_LOW_VOLTAGE   CRITICAL_LOW_VOLTAGE
 #endif
@@ -45,7 +50,7 @@
 #endif
 
 #ifndef LOW_VOLTAGE
-  #define PM_BAT_LOW_VOLTAGE   6.4f // @@ original 3.2f
+  #define PM_BAT_LOW_VOLTAGE   6.6f // @@ original 3.2f
 #else
   #define PM_BAT_LOW_VOLTAGE   LOW_VOLTAGE
 #endif
@@ -177,5 +182,17 @@ void pmEnableExtBatteryCurrMeasuring(uint8_t pin, float ampPerVolt);
  * Measure an external current.
  */
 float pmMeasureExtBatteryCurrent(void);
+
+/** @@ Emergency Landing procedure
+ * @brief If system crit error (battery low or comms loss) triggered, then overwrites setpoints with half thrust setpoint until the drone has landed.
+ * @param setpoint setpoint structure that is being passed to controller
+ * @return 1 if emergency landing complete, 0 otherwise
+ */
+bool pmEmergencyLand(setpoint_t *setpoint);
+
+/** @@ 
+ * @brief Set critical flag (used by other emergency controllers, eg commander timeout watchdog) 
+*/
+void pmSetCriticalFlag(void);
 
 #endif /* PM_H_ */

@@ -24,6 +24,10 @@
  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Modifications
+	Copyright (C) Nathan Mayhew 2025
+		- Adapted sensor initialisation
  ******************************************************************************/
 
 /**
@@ -123,21 +127,21 @@ bool vl53l1xInit(VL53L1_Dev_t *pdev, I2C_Dev *I2cHandle, int16_t offset)
 		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
 		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
 		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
-		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
-		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
-		 * |_|_|_|_|_|_|x|x|x|x|_|_|_|_|_|_|
-		 * |_|_|_|_|_|_|x|x|x|x|_|_|_|_|_|_|
-		 * |_|_|_|_|_|_|x|x|x|x|_|_|_|_|_|_|
-		 * |_|_|_|_|_|_|x|x|x|x|_|_|_|_|_|_|
-		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
-		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
+		 * |_|_|_|_|x|x|x|x|x|x|x|x|_|_|_|_|
+		 * |_|_|_|_|x|x|x|x|x|x|x|x|_|_|_|_|
+		 * |_|_|_|_|x|x|x|x|x|x|x|x|_|_|_|_|
+		 * |_|_|_|_|x|x|x|x|x|x|x|x|_|_|_|_|
+		 * |_|_|_|_|x|x|x|x|x|x|x|x|_|_|_|_|
+		 * |_|_|_|_|x|x|x|x|x|x|x|x|_|_|_|_|
+		 * |_|_|_|_|x|x|x|x|x|x|x|x|_|_|_|_|
+		 * |_|_|_|_|x|x|x|x|x|x|x|x|_|_|_|_|
 		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
 		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
 		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
 		 * |_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_|
 		 * */ 
 
-		status = VL53L1X_SetROI(pdev->I2cDevAddr, 8, 8);
+		//status = VL53L1X_SetROI(pdev->I2cDevAddr, 8, 8);
 		//status = VL53L1X_SetROICenter(pdev->I2cDevAddr, )
 
 

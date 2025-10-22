@@ -33,6 +33,10 @@
  * preserve the behavior of the other profiles.
  *
  * For the flag. T_ means task. H_ means HAL module. U_ would means utils.
+ * 
+ * Modifications
+ *  Copyright (C) Nathan Mayhew 2025
+ *    - Multiranger task
  */
 
 #ifndef CONFIG_H_

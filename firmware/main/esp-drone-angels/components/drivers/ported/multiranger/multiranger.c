@@ -19,13 +19,18 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * Modifications: 
+ *    Copyright (C) 2025 Nathan Mayhew
+ *      - Removed one-wire eeprom check
+ *      - Updated to use ULD API
  */
 /* multiranger.c: Multiranger deck driver */
 
 // @@ ADDED FOR MULTIRANGER DECK
 
 // @@ Enable data spoofing:
-#define SPOOF
+//#define SPOOF
 
 //#include "deck.h" @@ not in ESP-Drone
 #include "deck_digital.h"

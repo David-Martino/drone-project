@@ -33,7 +33,19 @@
  * 
  * @copyright
  *   © 2025 Nathan Mayhew
- *   Licensed under GPLv3.0; see the LICENSE file
+ * 
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, in version 3.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "stabilizer.h"
@@ -58,11 +70,13 @@
  * 
  */
 
-#define THRESH       300 // was for setpoint based avoidance, now for state based avoidance. TODO: make into a parameter later
-#define DHYST        50 // Hysteresis distance 
-#define MIN_VEL      0.1f // OA will only trigger for v > 0.1
-#define RUN_VEL      0.1f // Speed to back away from object
-static uint8_t triggered; // State machine variable for OA event (1 = OA avtive, 0 = OA inactive)
+#define THRESH       300 // OA triggers for ranges below this if velocity > MIN_VEL
+#define THRESH_CRIT   200 // OA triggers for ranges below this, without considering velocity.
+#define DHYST        50 // OA detriggers for ranges greater than THRESH+DHYST
+#define MIN_VEL      0.1f // Minum velocity of OA (m/s)
+#define MIN_ALTITUDE   0.1 // Minimum altitude (m)
+#define RUN_VEL      0.1f // Speed to back away from object (m/s)
+static uint8_t triggered; // State machine variable for OA event (1 = OA active, 0 = OA inactive)
 
 void obstacleAvoidanceSetVelSetpoint(setpoint_t *setpoint, float vx, float vy, float vz);
 uint8_t obstacleAvoidanceRangeVelocityCheck(uint8_t *threats, uint32_t limit, float vx, float vy, float vz);
@@ -114,122 +128,57 @@ void obstacleAvoidanceUpdateSetpoint(setpoint_t *setpoint, state_t *state)
      * ROS not using the HL won't affect anything if we re-enable the HL, since the HL will just get
      * disabled as soon as a non-HL command is sent
      */
+    // Only trigger OA if drone is above minimum altitude
+    if (state->position.z > MIN_ALTITUDE) {  // TODO: verify that state estimation functions even for rollover condition. Otherwise, up sensor will always trigger OA when rolled over on floor.
+        if (triggered) {
+            // OA is already active
 
-    if (triggered) {
-        if (obstacleAvoidanceRangeCheck(threats, THRESH+DHYST)) {
-            // Update state variable (stays the same so not necessary here)
-            triggered = 1;
+            if (obstacleAvoidanceRangeCheck(threats, THRESH+DHYST)) {
+                // Update state variable (stays the same so not necessary here)
+                triggered = 1;
 
-            // Build velocity vector command
-            if (threats[0]) {vxNew = -RUN_VEL;}; // Front
-            if (threats[1]) {vxNew = RUN_VEL;};  // Back
-            if (threats[2]) {vyNew = -RUN_VEL;}; // Left
-            if (threats[3]) {vyNew = RUN_VEL;};  // Right
-            if (threats[4]) {vzNew = -RUN_VEL;}; // Up
+                // Build velocity vector command
+                if (threats[0]) {vxNew = -RUN_VEL;}; // Front
+                if (threats[1]) {vxNew = RUN_VEL;};  // Back
+                if (threats[2]) {vyNew = -RUN_VEL;}; // Left
+                if (threats[3]) {vyNew = RUN_VEL;};  // Right
+                if (threats[4]) {vzNew = -RUN_VEL;}; // Up
 
-            // Set velocity setpoint
-            obstacleAvoidanceSetVelSetpoint(setpoint, vxNew, vyNew, vzNew);  
+                // Set velocity setpoint
+                obstacleAvoidanceSetVelSetpoint(setpoint, vxNew, vyNew, vzNew);  
+            }
+            else {
+                // Update State Variable
+                triggered = 0;
+                
+                // Set hover setpoint
+                obstacleAvoidanceSetVelSetpoint(setpoint, 0, 0, 0);
+
+                // commanderRelaxPriority(); // need for HL commander to resume control.
+            };
         }
         else {
-            // Update State Variable
-            triggered = 0;
-            
-            // Set hover setpoint
-            obstacleAvoidanceSetVelSetpoint(setpoint, 0, 0, 0); // Send hover setpoint
+            // OA is not active
 
-            //
-            commanderRelaxPriority();
-        };
-    }
-    else {
-        if (obstacleAvoidanceRangeVelocityCheck(threats, THRESH, vx, vy, vz)) {
-            // Update State variable
-            triggered = 1;
+            uint8_t velcheck = obstacleAvoidanceRangeVelocityCheck(threats, THRESH, vx, vy, vz);
+            uint8_t critcheck = obstacleAvoidanceRangeCheck(threats, THRESH_CRIT); // called in this order so critcheck overrides threats.
 
-            //build velocity vector from threats
-            if (threats[0]) {vxNew = -RUN_VEL;}; // Front
-            if (threats[1]) {vxNew = RUN_VEL;};  // Back
-            if (threats[2]) {vyNew = -RUN_VEL;}; // Left
-            if (threats[3]) {vyNew = RUN_VEL;};  // Right
-            if (threats[4]) {vzNew = -RUN_VEL;}; // Up
+            if (velcheck || critcheck) {
+                // Update State variable
+                triggered = 1;
 
-            // Send velocity setpoint
-            obstacleAvoidanceSetVelSetpoint(setpoint, vxNew, vyNew, vzNew);
+                //build velocity vector from threats
+                if (threats[0]) {vxNew = -RUN_VEL;}; // Front
+                if (threats[1]) {vxNew = RUN_VEL;};  // Back
+                if (threats[2]) {vyNew = -RUN_VEL;}; // Left
+                if (threats[3]) {vyNew = RUN_VEL;};  // Right
+                if (threats[4]) {vzNew = -RUN_VEL;}; // Up
+
+                // Send velocity setpoint
+                obstacleAvoidanceSetVelSetpoint(setpoint, vxNew, vyNew, vzNew);
+            };
         };
     };
-
-
-
-    // x-axis
-    // if (vx > MIN_VEL) {
-    //     if (rangeGet(rangeFront) < THRESH) {
-    //         vxNew = -0.1f; // Move backwards (-x)
-    //         DEBUG_PRINTI("Front TRIGGERED");
-    //         triggered = 1;
-    //     }
-    // }
-    // else if (vx < -MIN_VEL) {
-    //     if (rangeGet(rangeBack) < THRESH) {
-    //         vxNew = 0.1f; // Move forwards (+x)
-    //         DEBUG_PRINTI("back TRIGGERED");
-    //         triggered = 1;
-    //     };
-    // };
-    // // y-axis
-    // if (vy > MIN_VEL) {
-    //     if (rangeGet(rangeLeft) < THRESH) {
-    //         vyNew = -0.1f; // Move Right (-y)
-    //         DEBUG_PRINTI("Left TRIGGERED");
-    //         triggered = 1;
-    //     };
-    // }
-    // else if (vy < -MIN_VEL) {
-    //     if (rangeGet(rangeRight) < THRESH) {
-    //         vyNew = 0.1f; // Move Left (+y)
-    //         DEBUG_PRINTI("Right TRIGGERED");
-    //         triggered = 1;
-
-    //     };
-    // };
-    // // z-axis
-    // if (vz > MIN_VEL) {
-    //     if (rangeGet(rangeUp) < THRESH) {
-    //         vzNew = -0.1f; // Move Down (-z)
-    //         DEBUG_PRINTI("Up TRIGGERED");
-    //         triggered = 1;
-    //     };
-    // };
-    
-
-    /*          Take OA Action              */
-
-    /* If an obstacle was detected, then vxNew, vyNew or vzNew are nonzero, 
-    *  and an OA velocity setpoint should be sent.
-    *
-    * Otherwise, if no obstacle is detected, but OA is still triggered (triggered = 1), 
-    * then we must stop the drone so it doesn't continue flying off. Hence OA sets a 0 velocity setpoint
-    * [Note: maybe this should become a position setpoint with a relative (0,0,0) setpoint?]
-    * 
-    * If no obstacle is detected, and OA is not active (triggered = 0), then do nothing.
-    * 
-    * 
-    * The hover seems kind of redundant if the drone immediately begins receiving commands from GCS,
-    * but this implementation should guarantee that the drone stops moving if no further commands
-    * are being sent.
-    */
-    // if ((vxNew != 0.0f) || (vyNew != 0.0f) || (vzNew != 0.0f)) {
-
-    //     obstacleAvoidanceSetVelSetpoint(setpoint, vxNew, vyNew, vzNew);
-        
-    //     triggered = 1;
-    // }
-    // else {
-    //     if (triggered == 1) {
-    //         obstacleAvoidanceSetVelSetpoint(setpoint, 0.0f, 0.0f, 0.0f); // could just pass in vxNew, etc because they should already be zero.
-    //     };
-
-    //     triggered = 0;
-    // };
 }
 
 
@@ -280,6 +229,7 @@ uint8_t obstacleAvoidanceRangeVelocityCheck(uint8_t *threats, uint32_t limit, fl
             localTriggered = 1;
         };
     };
+
     // y-axis
     if (vy > MIN_VEL) {
         if (rangeGet(rangeLeft) < limit) {
@@ -294,6 +244,7 @@ uint8_t obstacleAvoidanceRangeVelocityCheck(uint8_t *threats, uint32_t limit, fl
 
         };
     };
+    
     // z-axis
     if (vz > MIN_VEL) {
         if (rangeGet(rangeUp) < limit) {

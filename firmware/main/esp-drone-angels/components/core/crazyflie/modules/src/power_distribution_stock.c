@@ -21,6 +21,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
+ * Modifications
+ *    Copyright (C) Nathan Mayhew 2025
+ *      - Added in motor mixing coefficients for deadcat frame.
+ * 
  * power_distribution_stock.c - Crazyflie stock power distribution code
  */
 

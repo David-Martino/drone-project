@@ -274,7 +274,7 @@ class MotionCommander:
 
         self.start_linear_motion(velocity_x, velocity_y, velocity_z)
         time.sleep(flight_time)
-        self.stop()
+        #self.stop()
 
     # Velocity based primitives
 

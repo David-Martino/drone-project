@@ -21,7 +21,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
- *
+ * Modifications: 
+ *    Copyright (C) 2025 Nathan Mayhew
+ *      - Added commander relaxation
+ *      - Emergency landing behaviour on WDT timeout
  */
 #include <string.h>
 
@@ -37,6 +40,12 @@
 #include "param.h"
 #include "stm32_legacy.h"
 #include "static_mem.h"
+
+#include "pm_esplane.h" // @@ 
+#include "debug_cf.h" // @@
+#include "range.h"
+
+#define MIN_TIMEOUT_HEIGHT 100 // @@ Comms watchdog will only trigger emergency landing if the height is greater than this dist (mm)
 
 static bool isInit;
 const static setpoint_t nullSetpoint;
@@ -97,7 +106,7 @@ void commanderNotifySetpointsStop(int remainValidMillisecs)
   );
   xQueuePeek(setpointQueue, &tempSetpoint, 0);
   tempSetpoint.timestamp = currentTime - timeSetback;
-  xQueueOverwrite(setpointQueue, &tempSetpoint);
+  //xQueueOverwrite(setpointQueue, &tempSetpoint); // @@ basically null setpoint to not trigger the timeout?
   crtpCommanderHighLevelTellState(&lastState);
 }
 
@@ -116,12 +125,19 @@ void commanderGetSetpoint(setpoint_t *setpoint, const state_t *state)
   uint32_t currentTime = xTaskGetTickCount();
 
   if ((currentTime - setpoint->timestamp) > COMMANDER_WDT_TIMEOUT_SHUTDOWN) {
+    //@@ CF original Implementation
     if (enableHighLevel) {
       crtpCommanderHighLevelGetSetpoint(setpoint, state); // @@ high level commander ignores shutdown command
     }
     if (!enableHighLevel || crtpCommanderHighLevelIsStopped()) {
       memcpy(setpoint, &nullSetpoint, sizeof(nullSetpoint)); // @@ send null set point to drop the drone out of the sky
     }
+
+
+    /* @@ Dell's Angels Auto-land */
+    // if (rangeGet(rangeDown) > MIN_TIMEOUT_HEIGHT) {
+    //   pmSetCriticalFlag();
+    // }
   } else if ((currentTime - setpoint->timestamp) > COMMANDER_WDT_TIMEOUT_STABILIZE) { // @@ Keep the drone stationary 
     xQueueOverwrite(priorityQueue, &priorityDisable);
     

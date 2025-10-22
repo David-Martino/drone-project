@@ -25,6 +25,11 @@
  * Implements HAL for sensors MPU9250 and LPS25H
  *
  * 2016.06.15: Initial version by Mike Hamer, http://mikehamer.info
+ * 
+ *  Modifications: 
+ *    Copyright (C) 2025 Nathan Mayhew
+ *      - MMC5983MA support
+ *      - Multiranger initialisation
  */
 #include <math.h>
 

@@ -36,10 +36,10 @@ def simple_param_async(scf, groupstr, namestr):
 
     cf.param.add_update_callback(group=groupstr, name=namestr, cb=param_stab_est_callback)
     time.sleep(1)
-    cf.param.set_value(full_name,2)
-    time.sleep(1)
-    cf.param.set_value(full_name,1)
-    time.sleep(1)
+    # cf.param.set_value(full_name,2)
+    # time.sleep(1)
+    # cf.param.set_value(full_name,1)
+    # time.sleep(1)
 
 
 def log_stab_callback(timestamp, data, logconf):
@@ -136,13 +136,19 @@ if __name__ == '__main__':
     lg_mag.add_variable('mag.y','float')
     lg_mag.add_variable('mag.z','float')
 
+    lg_sys = LogConfig(name='Sys', period_in_ms=10)
+    lg_sys.add_variable('sys.armed','uint8_t')
 
-    group = "stabilizer"
-    name = "estimator"
+
+    group = "pm"
+    name = "critflag"
 
     
 
     with SyncCrazyflie(uri, cf=Crazyflie(rw_cache='./cache')) as scf:
 
         simple_log(scf, lg_range)
+        #scf.cf.platform.send_arming_request(True)
 
+        #simple_param_async(scf,group,name)
+        #simple_param_async(scf,"pm","landed")

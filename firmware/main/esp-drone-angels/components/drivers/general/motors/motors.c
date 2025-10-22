@@ -19,6 +19,10 @@
  *
  * motors.c - Motor driver
  *
+ * Modifications
+ *  Copyright (C) Nathan Mayhew 2025
+ *      - Thrust map limiting
+ *      - 1-2ms PWM signal mapping
  */
 
 #include <stdbool.h>

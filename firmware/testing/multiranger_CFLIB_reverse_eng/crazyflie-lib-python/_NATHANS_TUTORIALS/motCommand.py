@@ -10,6 +10,9 @@ from cflib.crazyflie.syncCrazyflie import SyncCrazyflie
 from cflib.positioning.motion_commander import MotionCommander
 from cflib.utils import uri_helper
 
+import csv
+import numpy as np
+
 uri = uri_helper.uri_from_env(default='udp://192.168.43.42')
 deck_attached_event = Event()
 
@@ -17,6 +20,9 @@ DEFAULT_HEIGHT = 0.5
 BOX_LIMIT = 0.5
 
 position_estimate = [0,0]
+
+xpos = []
+dist = []
 
 def param_deck_flow(_, value_str):
     value = int(value_str)
@@ -42,13 +48,19 @@ def take_off_simple(scf):
     print("Take off!")
     #count  = 0
     with MotionCommander(scf, default_height=DEFAULT_HEIGHT) as mc:
-        time.sleep(3)
-        # mc.forward(0.5)
+        time.sleep(2)
+        #time.sleep(3)
+        mc.forward(4, velocity=0.3)
+        #mc.forward(2,velocity=0.3)
         #mc.stop()
         # time.sleep(1)
-        print("Going in a Circle")
-        mc.circle_right(1)
-        #mc.forward(5, velocity = 0.5)
+        #print("Going in a Circle")
+        # mc.circle_right(1)
+        #mc.forward(2, velocity = 0.5)
+        # print("Turning")
+        # mc.turn_right(90)
+        # print("finished")
+        # time.sleep(1)
 
         #mc.forward(3, velocity = 0.5)
         # time.sleep(13)
@@ -89,7 +101,8 @@ def log_pos_callback(timestamp, data, logconf):
     #print("Height: %d \t Voltage: %d", data['stateEstimate.z'], data['pm.vbat'])
     #position_estimate[0] = data['stateEstimate.x']
     #position_estimate[0] = data['stateEstimate.y']
-    print(data['stateEstimate.z'])
+    xpos.append(data['stateEstimate.x'])
+    dist.append(data['range.front'])
 
 if __name__ == '__main__':
 
@@ -102,9 +115,7 @@ if __name__ == '__main__':
         # Logging Setup
         logconf = LogConfig(name='Position', period_in_ms=10)
         logconf.add_variable('stateEstimate.x', 'float')
-        logconf.add_variable('stateEstimate.y', 'float')
-        logconf.add_variable('stateEstimate.z', 'float')
-        logconf.add_variable('pm.vbat','float')
+        logconf.add_variable('range.front', 'int16_t')
         scf.cf.log.add_config(logconf)
         logconf.data_received_cb.add_callback(log_pos_callback)
 
@@ -117,6 +128,16 @@ if __name__ == '__main__':
 
         # Motion Commands
         take_off_simple(scf)
+        #time.sleep(10)
+
+
+
+        OAdata = [[xpos],[dist]]
+        with open('fuck.csv', 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(['x', 'dist'])   # Header
+            for xi, yi in zip(xpos, dist):
+                writer.writerow([xi, yi])
 
         # Logging Stop
         logconf.stop()

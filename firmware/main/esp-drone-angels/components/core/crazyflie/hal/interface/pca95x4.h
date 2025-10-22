@@ -20,6 +20,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * Modifications
+ *    Copyright (C) Nathan Mayhew 2025
+ *      - Added function to read from the PCA95X4 output register.
  *
  * pca95x4.h - Functions for interfacing PCA95X4 I2C GPIO extender
 //  */

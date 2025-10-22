@@ -21,6 +21,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * Modifications: 
+ *    Copyright (C) 2025 Nathan Mayhew
+ *      - systemSetMotorsLow
  *
  * system.c - Top level module implementation
  */
@@ -365,7 +369,7 @@ PARAM_GROUP_STOP(cpu)*/
 PARAM_GROUP_START(system)
 PARAM_ADD(PARAM_INT8 | PARAM_RONLY, selftestPassed, &selftestPassed)
 PARAM_ADD(PARAM_INT8, forceArm, &forceArm)
-PARAM_GROUP_STOP(sytem)
+PARAM_GROUP_STOP(system)
 
 /* Loggable variables */
 LOG_GROUP_START(sys)

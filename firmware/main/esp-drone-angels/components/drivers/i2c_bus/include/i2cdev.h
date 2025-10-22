@@ -17,7 +17,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
- *
+ * Modifications
+ *    Copyright (C) Nathan Mayhew 2025
+ *      - Added I2C scan function (for debugging)
+ * 
  * i2cdev.h - Functions to write to I2C devices
  */
 

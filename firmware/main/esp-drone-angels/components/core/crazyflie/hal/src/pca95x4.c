@@ -21,6 +21,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
+ * Modifications
+ *    Copyright (C) Nathan Mayhew 2025
+ *      - Added in extra debugging functions.
+ * 
  * pca95x4.c - Functions for interfacing PCA95X4 I2C GPIO extender
  */
 // #define DEBUG_MODULE "PCA95X4"

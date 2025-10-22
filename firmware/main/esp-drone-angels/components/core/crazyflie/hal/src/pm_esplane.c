@@ -21,6 +21,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * Modifications: 
+ *    Copyright (C) 2025 Nathan Mayhew
+ *      - Added emergency landing and critical flag system
  *
  * pm.c - Power Management driver and functions.
  */
@@ -41,6 +45,11 @@
 #include "commander.h"
 #include "sound.h"
 #include "stm32_legacy.h"
+#include "range.h" // @@ 
+#include "stabilizer.h" // @@
+#include "param.h"
+#define OFF_DIST 50 // @@ distance (mm) to ground at which motors are turned off.
+#define DESCEND_SPEED  0.3 // @@ emergency landing speed (m/s)
 //#include "deck.h"
 #define DEBUG_MODULE "PM"
 #include "debug_cf.h"
@@ -92,6 +101,9 @@ static PMStates pmState;
 static PmSyslinkInfo pmSyslinkInfo;
 
 static uint8_t batteryLevel;
+
+static uint8_t criticalFlag = 0; // @@ state variable. 1 critical low, so engage/continue landing procedure
+static bool landed = false; // @@ state variable. 1 means emergency landing complete, 0 otherwise.
 
 static void pmSetBatteryVoltage(float voltage);
 
@@ -157,6 +169,7 @@ static void pmSetBatteryVoltage(float voltage)
  */
 static void pmSystemShutdown(void)
 {
+  criticalFlag = 1;
 #ifdef ACTIVATE_AUTO_SHUTDOWN
 //TODO: Implement syslink call to shutdown
 #endif
@@ -312,6 +325,43 @@ bool pmIsDischarging(void)
   return (pmState == lowPower) || (pmState == battery);
 }
 
+/** @@ Emergency Landing procedure
+ * @brief Emergency landing procedure
+ * @param setpoint setpoint structure that is being passed to controller
+ * @return 1 if emergency landing complete, 0 otherwise
+ */
+bool pmEmergencyLand(setpoint_t *setpoint) {
+
+  if (criticalFlag) {
+    uint16_t zheight = rangeGet(rangeDown); // Determine current distance to floor
+    if (zheight > OFF_DIST) { // if greater than 50mm from the floor, continue sending a DESCEND setpoint
+      setpoint->mode.x = modeVelocity;
+      setpoint->mode.y = modeVelocity;
+      setpoint->mode.z = modeVelocity;
+      setpoint->mode.roll = modeDisable;
+      setpoint->mode.pitch = modeDisable;
+      setpoint->mode.yaw = modeDisable;
+      setpoint->velocity.x = 0;
+      setpoint->velocity.y = 0;
+      setpoint->velocity.z = -DESCEND_SPEED;
+      //DEBUG_PRINTI("Landing");
+    }
+    else {
+      //DEBUG_PRINTI("Landing complete");
+      landed = true; // Emergency Landing complete, shut down power.
+    }
+  };
+  
+  return landed;
+}
+
+/** Set Down
+ * 
+ */
+void pmSetCriticalFlag(void) {
+  criticalFlag = 1;
+}
+
 void pmTask(void *param)
 {
   PMStates pmStateOld = battery;
@@ -424,6 +474,11 @@ void pmTask(void *param)
     }
   }
 }
+
+PARAM_GROUP_START(pm)
+PARAM_ADD(PARAM_INT8, critflag, &criticalFlag)
+PARAM_ADD(PARAM_INT8, landed, &landed)
+PARAM_GROUP_STOP(pm)
 
 LOG_GROUP_START(pm)
 LOG_ADD(LOG_FLOAT, vbat, &batteryVoltage)

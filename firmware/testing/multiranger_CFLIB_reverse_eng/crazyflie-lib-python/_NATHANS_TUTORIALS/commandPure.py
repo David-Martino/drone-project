@@ -11,6 +11,8 @@ from cflib.positioning.motion_commander import MotionCommander
 from cflib.utils import uri_helper
 from cflib.positioning.position_hl_commander import PositionHlCommander
 
+import csv
+
 uri = uri_helper.uri_from_env(default='udp://192.168.43.42')
 deck_attached_event = Event()
 
@@ -18,6 +20,9 @@ DEFAULT_HEIGHT = 0.5
 BOX_LIMIT = 0.5
 
 position_estimate = [0,0]
+
+yawReal = []
+yawSP = []
 
 def param_deck_flow(_, value_str):
     value = int(value_str)
@@ -39,23 +44,39 @@ def move_box_limit(scf):
                 mc.start_forward()
             time.sleep(0.1)
 
-#def hover(scf):
-    #print("Take off!")
-    #cf = scf.cf
+def hover(scf):
+    print("Take off!")
+    cf = scf.cf
 
-    # for i in range(10):
-    #     cf.commander.send_hover_setpoint(0, 0, 0, i/20) # slowly increase height
+    for i in range(10):
+        cf.commander.send_hover_setpoint(0, 0, 0, i/20) # slowly increase height
+        time.sleep(0.1)
 
-    # for i in range(10):
-    #     cf.commander.send_hover_setpoint(0, 0, 0, i/20) # slowly increase height
+    print("hover")
+    for i in range(20):
+        cf.commander.send_position_setpoint(0,0,0.5,0) # x y z yaw
+        time.sleep(0.1)
 
+    print("turn")
+    for i in range(20):
+        cf.commander.send_position_setpoint(0,0,0.5,90) # x y z yaw
+        time.sleep(0.1)
 
+    print("Descend")
+    for i in range(10):
+        cf.commander.send_hover_setpoint(0, 0, 0, (10-i)/20) # slowly decrease height
+        time.sleep(0.1)
 
+    scf.cf.commander.send_setpoint(0, 0, 0, 0)
+    print("stop")
+    scf.cf.commander.send_stop_setpoint()
 
-
-
-    
-
+def log_pos_callback(timestamp, data, logconf):
+    #print("Height: %d \t Voltage: %d", data['stateEstimate.z'], data['pm.vbat'])
+    #position_estimate[0] = data['stateEstimate.x']
+    #position_estimate[0] = data['stateEstimate.y']
+    yawReal.append(data['stateEstimate.yaw'])
+    yawSP.append(data['controller.yaw'])
 
 if __name__ == '__main__':
 
@@ -63,19 +84,28 @@ if __name__ == '__main__':
 
     with SyncCrazyflie(uri, cf=Crazyflie(rw_cache='./cache')) as scf:
         #scf.cf.commander.set_client_xmode(True)
-        scf.cf.param.set_value('commander.enHighLevel', '1')
-        time.sleep(0.1)
+        #scf.cf.param.set_value('commander.enHighLevel', '1')
+
+        logconf = LogConfig(name='Position', period_in_ms=10)
+        logconf.add_variable('stateEstimate.yaw', 'float')
+        logconf.add_variable('controller.yaw', 'int16_t')
+        scf.cf.log.add_config(logconf)
+        logconf.data_received_cb.add_callback(log_pos_callback)
 
         scf.cf.platform.send_arming_request(True)
+
+        logconf.start()
+
+        hover(scf)
         
-        print("start")
-        scf.cf.commander.send_setpoint(0, 0, 0, 0)
-        time.sleep(0.1)
-        print("setpoint")
-        scf.cf.commander.send_setpoint(0, 0, 0, 12000)
-        print("sleep")
-        time.sleep(2)
-        print("stop")
-        scf.cf.commander.send_stop_setpoint()
+        OAdata = [[yawReal],[yawSP]]
+        with open('yaw.csv', 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(['actual', 'set'])   # Header
+            for xi, yi in zip(yawReal, yawSP):
+                writer.writerow([xi, yi])
+
+        # Logging Stop
+        logconf.stop()
         
             

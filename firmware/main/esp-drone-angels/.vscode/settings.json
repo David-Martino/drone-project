@@ -24,7 +24,10 @@
     "pm_esplane.h": "c",
     "crtp_commander.h": "c",
     "attitude_controller.h": "c",
-    "math3d.h": "c"
+    "math3d.h": "c",
+    "stabilizer.h": "c",
+    "motors.h": "c",
+    "obstacle_avoidance.h": "c"
   },
   "idf.openOcdConfigs": [
     "board/esp32s3-builtin.cfg"

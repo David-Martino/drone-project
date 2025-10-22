@@ -21,6 +21,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
+ * Modifications: 
+ *    Copyright (C) 2025 Nathan Mayhew
+ *      - Obstacle Avoidance
+ *      - Emergency Landing
  *
  */
 
@@ -87,6 +91,8 @@ typedef enum { configureAcc, measureNoiseFloor, measureProp, testBattery, restar
 static STATS_CNT_RATE_DEFINE(stabilizerRate, 500);
 static rateSupervisor_t rateSupervisorContext;
 static bool rateWarningDisplayed = false;
+
+//const static setpoint_t nullSetpoint; // @@ to be sent after an emergency landing
 
 static struct {
   // position - mm
@@ -295,28 +301,28 @@ static void stabilizerTask(void* param)
       stateEstimator(&state, &sensorData, &control, tick);
       compressState();
 
-      commanderGetSetpoint(&setpoint, &state); // @@ fetches the crtp setpoint from the queue
+      commanderGetSetpoint(&setpoint, &state); // Fetches the CRTP setpoint from the queue
       compressSetpoint();
 
-      // @@ TODO: Call to the obstacleAvoidanceUpdateSetpoint here
-      obstacleAvoidanceUpdateSetpoint(&setpoint, &state);
+      //emergencyStop = pmEmergencyLand(&setpoint); // Emergency landing action. Set to 1 once landed @@ 
 
-      sitAwUpdateSetpoint(&setpoint, &sensorData, &state);
-      //collisionAvoidanceUpdateSetpoint(&setpoint, &sensorData, &state, tick); // @@ this is avoiding collision with other crazyflies, not obstacles
+      //obstacleAvoidanceUpdateSetpoint(&setpoint, &state); // Obstacle Avoidance action @@
 
-      controller(&control, &setpoint, &sensorData, &state, tick);
+      sitAwUpdateSetpoint(&setpoint, &sensorData, &state); // Pitch limit / tumble detection (Crazyflie module)
 
+      controller(&control, &setpoint, &sensorData, &state, tick); // Map a setpoint to a Thrust, Roll, Pitch, Yaw control command
+
+      //controller(&control, &setpoint, &sensorData, &state, tick);
+      
       checkEmergencyStopTimeout();
 
       checkStops = systemIsArmed();
       if (emergencyStop || (systemIsArmed() == false)) {
         powerStop();
+        //DEBUG_PRINTE("OFF");
       } else {
         powerDistribution(&control);
       }
-
-      // 
-      // xQueueSend(uartQueue) // @@ SEND TO UART QUEUE
 
       //TODO: Log data to uSD card if configured
       /*if (usddeckLoggingEnabled()

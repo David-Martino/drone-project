@@ -17,6 +17,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
+ * Modifications
+ *    Copyright (C) Nathan Mayhew 2025
+ *      - Added conditional for 7/8 bit addresses based on I2C1/I2C0.
  *
  * i2cdev.c - Functions to write to I2C devices
  */

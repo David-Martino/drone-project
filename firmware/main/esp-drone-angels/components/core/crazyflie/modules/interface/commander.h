@@ -20,6 +20,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * Modifications: 
+ *    Copyright (C) 2025 Nathan Mayhew
+ *      - Added commander relaxation
  *
  */
 
@@ -33,7 +37,7 @@
 #define DEFAULT_YAW_MODE  XMODE
 
 #define COMMANDER_WDT_TIMEOUT_STABILIZE  M2T(500)
-#define COMMANDER_WDT_TIMEOUT_SHUTDOWN   M2T(2000)
+#define COMMANDER_WDT_TIMEOUT_SHUTDOWN   M2T(5000) // @@ originally 2000
 
 #define COMMANDER_PRIORITY_DISABLE 0
 #define COMMANDER_PRIORITY_LOWEST    1 // @@ added
