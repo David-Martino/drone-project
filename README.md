@@ -1,7 +1,11 @@
 # ELEC5550 3D Mapping and Navigating Autonomous Drone
 This is the repository for Team 0-05's final year design project for ELEC5550. The project is to build a drone system capable of autonomously mapping indoor spaces in 3D using onboard sensors, while meeting restrictive power and cost constraints (a 2S 800mAh battery and a $500 budget). Navigation is done using ROS2, running on a ground station connected to the drone over Wi-Fi. Mapping is also done on ROS2, based on UZ-SLAMLab's implementation of ORB-SLAM3 for Visual SLAM and Kimberly McGuire's crazyflie_ros2_multiranger repository for the ToF mapping. The flight controller is based on Espressif's ESP-Drone library, which itself is based on Bitcraze's Crazyflie flight kernel.
 
-[picture of drone]
+<center>
+
+<img src="figures/cover.jpg" alt="Cover" width="600"/>
+
+</center>
 
 # Key features 
 - Visual SLAM 3D mapping using a monocular Raspberry Pi Camera 3
@@ -21,13 +25,17 @@ The maps are exported as OctoMap files (.bt). Examples can be found under the `E
 
 ### Test LDR-02: Real-time mapping using the ToF array
 
-[Gif of real-time mappiung]
+<center>
+
+![LDR-02 Verfication](figures/LDR02.gif)
+
+</center>
 
 
 ### Test FC-04: Obstacle Avoidance
 <center>
 
-![FC-05 Verfication](figures/FC04.gif)
+![FC-04 Verfication](figures/FC04.gif)
 
 </center>
 
