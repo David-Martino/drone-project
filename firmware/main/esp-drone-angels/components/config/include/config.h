@@ -88,7 +88,7 @@
 #define UDP_TX_TASK_PRI         2
 #define CRTP_TX_TASK_PRI        2
 #define IMU_UART_TASK_PRI       5   // EDIT
-#define UART_SYNC_TASK_PRI      5   // EDIT
+#define UART_SYNC_TASK_PRI      9   // EDIT
 // communication RX tasks
 #define UDP_RX_TASK_PRI         2
 #define EXTRX_TASK_PRI          2
@@ -149,7 +149,7 @@
 
 //Task stack sizes
 #define configBASE_STACK_SIZE CONFIG_BASE_STACK_SIZE
-#define CMD_HIGH_LEVEL_TASK_STACKSIZE (2 * configBASE_STACK_SIZE)
+#define CMD_HIGH_LEVEL_TASK_STACKSIZE (8 * configBASE_STACK_SIZE)   // EDIT
 #define CRTP_RX_TASK_STACKSIZE        (3 * configBASE_STACK_SIZE)
 #define CRTP_TX_TASK_STACKSIZE        (3 * configBASE_STACK_SIZE)
 #define EXTRX_TASK_STACKSIZE          (1 * configBASE_STACK_SIZE)

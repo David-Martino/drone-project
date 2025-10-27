@@ -91,7 +91,6 @@ enum UartTxHint_e
 	uartBufferHasSpace,		// The buffer was not empty but had enough space
 	uartBufferTooFull,		// The buffer was not empty and data doesn't fit
 	uartDataTooLong,		// Data is longer than the TX FIFO buffer size
-	uartWriteClash,	 		// Another task is currently writing
 	uartTxResultCount,  	// Sentinel, not a real UART TX result
 };
 typedef enum UartTxHint_e UartTxHint;

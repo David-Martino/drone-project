@@ -49,6 +49,13 @@
 #include <stddef.h>
 #include <string.h>
 
+// FreeRTOS includes
+#include "FreeRTOS.h"
+#include "semphr.h"
+
+// ESP-IDF includes
+#include "driver/uart.h"
+
 /* ----------------------------- Configurations ----------------------------- */
 
 #if defined(__GNUC__)
@@ -242,6 +249,36 @@ uint16_t crc16_ccitt(const uint8_t* data, size_t len);
  *       a single 0x00 delimiter on the wire between frames.
  */
 size_t cobs_encode(const uint8_t* input, size_t length, uint8_t* output);
+
+// Shared TX mutex handle (created once at init)
+extern SemaphoreHandle_t uartTxMutex;
+
+/**
+ * @brief Init to create the mutex for UART TX writes to prevent clashes.
+ * 
+ * This should be called by the init functions of all UART modules before their
+ * respective tasks are created to ensure that the mutex exists before any UART
+ * task starts running, regardless of init sequence. 
+ * 
+ * @note Subsequent calls are safe no-ops. 
+ */
+void uartTxLockInit(void);
+
+/**
+ * @brief Takes the UART TX mutex without blocking.
+ * 
+ * @retval true  if the UART TX mutex was successfully taken
+ * @retval false if the UART TX mutex was not available to be taken
+ */
+static inline BaseType_t uartTxLock(void) { return xSemaphoreTake(uartTxMutex, 0); }
+
+/**
+ * @brief Gives the UART TX mutex.
+ * 
+ * @retval true  if the UART TX mutex was successfully given
+ * @retval false if the UART TX mutex could not be given
+ */
+static inline BaseType_t uartTxUnlock(void) { return xSemaphoreGive(uartTxMutex); }
 
 #endif 
 

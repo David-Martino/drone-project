@@ -82,13 +82,20 @@ static void IRAM_ATTR uartsyncisr(void)
 {
 	// Get the current timestamp
 	uint64_t timestamp = (uint64_t)esp_timer_get_time();
+
+	// Initialise a "higher priority task is being woken" variable
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	
 	// Save the timestamp to the queue, overwriting if not empty
-	(void)xQueueOverwriteFromISR(uartSyncTimeQueue, &timestamp, pdTRUE); 
+	(void)xQueueOverwriteFromISR(uartSyncTimeQueue, &timestamp, &xHigherPriorityTaskWoken); 
 	
-	// Request a context switch on ISR exit
-	portYIELD_FROM_ISR();
-}
+	// If the unblocked UART_SYNC task has higher priority than the current task
+	if (xHigherPriorityTaskWoken == pdTRUE)
+	{
+		// Request context switch on ISR exit
+		portYIELD_FROM_ISR();
+	}
+}	
 
 /* ------------------------------ Public APIs ------------------------------- */
 

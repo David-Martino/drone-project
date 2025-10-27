@@ -313,8 +313,8 @@ static void sensorsTask(void *param)
             // Overwrite data in gyroProcessedQueue with latest processed IMU gyro data
             xQueueOverwrite(gyroProcessedQueue, &sensorData.gyro);
 
-						// Make non-volatile copy
-						uint64_t imuIntTimestampCopy = imuIntTimestamp; 
+			// Make non-volatile copy
+			uint64_t imuIntTimestampCopy = imuIntTimestamp; 
 
             // Overwrite data in the imuTimestampQueue with the latest IMU timestamp
             xQueueOverwrite(imuTimestampQueue, &imuIntTimestampCopy);
@@ -836,7 +836,7 @@ static void sensorsTaskInit(void)
   // Create FreeRTOS queue for IMU timestamp
   imuTimestampQueue = STATIC_MEM_QUEUE_CREATE(imuTimestampQueue);
 
-	// }
+  // }
 
   STATIC_MEM_TASK_CREATE(sensorsTask, sensorsTask, SENSORS_TASK_NAME, NULL, SENSORS_TASK_PRI);
   DEBUG_PRINTD("xTaskCreate sensorsTask \n");

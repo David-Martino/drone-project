@@ -90,6 +90,9 @@
 // Define max wire packet size after appending packet delimiter
 #define MAX_PACKET_SIZE (MAX_FRAME_SIZE + 1)
 
+// Define how often to send IMU data (send one every IMU_TX_FREQ)
+#define IMU_TX_FREQ 2
+
 /* -------------------------- Private Declarations -------------------------- */
 
 // Create initialisation flag to be set to true when imuuartInit() completes
@@ -109,7 +112,7 @@ enum UartDataType_e
 typedef enum UartDataType_e UartDataType;
 
 // Define default form of IMU data to transmit
-static const UartDataType defaultDataType = processedImuData;
+static const UartDataType defaultDataType = kalmanStateData;
 
 // Select the default UART data type
 static UartDataType uartDataType = defaultDataType;
@@ -121,6 +124,9 @@ static const char* const uartDataTypeNames[uartDataTypeCount] =
 	[processedImuData] = "processedImuData",
 	[kalmanStateData]  = "kalmanStateData",
 };
+
+// Initialise a counter variable for how often to send IMU data
+static uint64_t skipCounter = 0;
 
 /* ----------------------------- Local Helpers ------------------------------ */
 
@@ -200,6 +206,22 @@ static void imuuartTask(void *param)
 	{
 		// Block until the uartReady semaphore can be taken
 		uartWaitDataReady();
+
+		// Increment skip variable
+		skipCounter += 1;
+
+		// If it is not time to send IMU data yet 
+		if (skipCounter < IMU_TX_FREQ)
+		{
+			// Skip to next loop iteration
+			continue;
+		}
+		// If it is time to send IMU data
+		else
+		{
+			// Reset the skip variable
+			skipCounter = 0;
+		}
 
 		// Save current value of uartDataType in case its parameter value is changed
 		currentDataType = uartDataType;  // Kept constant within each loop
@@ -365,35 +387,54 @@ static void imuuartTask(void *param)
 		// Append a trailing 0x00 delimiter
 		packet[encLen++] = 0x00;
 
-		// Try write to UART FIFO buffer
-		writeResult = uartTryWrite(packet, encLen, &hint);
-
-		if (writeResult == true)
+		// If the UART TX mutex is available
+		if (uartTxLock() == pdTRUE)
 		{
-			// Increment packet counter
-			packetCounter += 1;
+			// Try write to UART FIFO buffer
+			writeResult = uartTryWrite(packet, encLen, &hint);
 
-			// If FIFO buffer did not empty since the last packet
-			if (hint == uartBufferHasSpace)
+			// Try give the UART TX mutex
+			if (uartTxUnlock() == pdFALSE)
 			{
-				// Warn user via debug that packets are not clearing fast enough 
-				DEBUG_PRINTW("Packet queued, but FIFO buffer was not empty");
+				// Notify user via debug if giving mutex fails
+				DEBUG_PRINTE("Failed to give UART TX mutex");
+			}
+
+			// If the write attempt was successful
+			if (writeResult == true)
+			{
+				// Increment packet counter
+				packetCounter += 1;
+
+				// If FIFO buffer did not empty since the last packet
+				if (hint == uartBufferHasSpace)
+				{
+					// Warn user via debug that packets are not clearing fast enough 
+					DEBUG_PRINTW("Packet queued, but FIFO buffer was not empty");
+				}
+			}
+			// If the write attempt was unsuccessful
+			else
+			{
+				// If buffer was too full to queue the next packet
+				if (hint == uartBufferTooFull)
+				{
+					// Notify user of the error via debug
+					DEBUG_PRINTE("Packet not queued, FIFO buffer too full");
+				}
+				// If packet is too long to ever fit in the buffer
+				else if (hint == uartDataTooLong)
+				{
+					// Notify user of the error via debug
+					DEBUG_PRINTE("Packet not queued, packet longer than FIFO buffer");
+				}
 			}
 		}
+		// If the UART TX mutex is unavailable
 		else
 		{
-			// If buffer was too full to queue the next packet
-			if (hint == uartBufferTooFull)
-			{
-				// Notify user of the error via debug
-				DEBUG_PRINTE("Packet not queued, FIFO buffer too full");
-			}
-			// If packet is too long to ever fit in the buffer
-			else if (hint == uartDataTooLong)
-			{
-				// Notify user of the error via debug
-				DEBUG_PRINTE("Packet not queued, packet longer than FIFO buffer");
-			}
+			// Notify the user via debug
+			DEBUG_PRINTE("Failed to take UART TX mutex");
 		}
 		
 	}
@@ -437,6 +478,9 @@ void imuuartInit(void)
 	{
 		// Notify user of successful UART hardware initialisation
 		DEBUG_PRINTI("Successfully initialised UART hardware controller");
+
+		// Ensure the mutex for UART writes has been initialised
+		uartTxLockInit();
 
 		// Create the IMU_UART task (with PRIORITY=2), which runs the imuuartTask() function
 		STATIC_MEM_TASK_CREATE(imuuartTask, imuuartTask, IMU_UART_TASK_NAME,NULL, IMU_UART_TASK_PRI);

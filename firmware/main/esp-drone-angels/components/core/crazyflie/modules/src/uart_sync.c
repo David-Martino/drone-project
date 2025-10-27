@@ -168,16 +168,33 @@ static void uartsyncTask(void *param)
 			(void)uart_get_tx_buffer_free_size(ESP_UART_PORT, &freeSpace);
 
 			// If the TX FIFO buffer is empty
-			if (freeSpace == ESP_UART_RX_BUF)
+			if (freeSpace == ESP_UART_TX_BUF)
 			{
-				// Try write to UART FIFO buffer
-				writeResult = uartTryWrite(packet, encLen, NULL);
-
-				// If the write attempt fails
-				if (writeResult != true)
+				// If the UART TX mutex is available
+				if (uartTxLock() == pdTRUE)
 				{
-					// Notify the user of the error via debug
-					DEBUG_PRINTE("Packet not queued, failed to write to FIFO");
+					// Try write to UART FIFO buffer
+					writeResult = uartTryWrite(packet, encLen, NULL);
+
+					// Try give the UART TX mutex
+					if (uartTxUnlock() == pdFALSE)
+					{
+						// Notify user via debug if giving mutex fails
+						DEBUG_PRINTE("Failed to give UART TX mutex");
+					}
+
+					// If the write attempt failed
+					if (writeResult != true)
+					{
+						// Notify the user of the error via debug
+						DEBUG_PRINTE("Packet not queued, failed to write to FIFO");
+					}
+				}
+				// If the UART TX mutex is unavailable
+				else
+				{
+					// Notify the user via debug
+					DEBUG_PRINTE("Failed to take UART TX mutex");
 				}
 			}
 			// If the FIFO buffer was not empty by write time
@@ -193,6 +210,9 @@ static void uartsyncTask(void *param)
 			// Notify the user of the error via debug
 			DEBUG_PRINTE("Failed to receive timestamp data for the packet");
 		}
+
+		// Reset the offset variable after sending
+		offset = 0;
 
 		// Reset the boolean for receiving all necessary data after sending
 		isDataReceived = true;
@@ -241,6 +261,9 @@ void uartsyncInit(void)
 	{
 		// Notify user of successful UART sync ISR initialisation
 		DEBUG_PRINTI("Successfully initialised UART sync ISR");
+
+		// Ensure the mutex for UART writes has been initialised
+		uartTxLockInit();
 
 		// Create the UART_SYNC task (with PRIORITY=8), which runs the uartsyncTask() function
 		STATIC_MEM_TASK_CREATE(uartsyncTask, uartsyncTask, UART_SYNC_TASK_NAME,NULL, UART_SYNC_TASK_PRI);

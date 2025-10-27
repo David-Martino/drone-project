@@ -46,6 +46,19 @@
 // App-specific includes
 #include "uart_helpers.h"
 
+// FreeRTOS includes
+#include "FreeRTOS.h"
+#include "semphr.h"
+
+// ESP-IDF includes
+#include "driver/uart.h"
+
+/* -------------------------- Private Declarations -------------------------- */
+
+// Initialise handle and queue for a UART mutex to prevent concurrent writes
+SemaphoreHandle_t uartTxMutex = NULL;
+StaticSemaphore_t uartTxMutexBuffer;
+
 /* ------------------------------- Public APIs ------------------------------ */
 
 /**
@@ -151,3 +164,23 @@ size_t cobs_encode(const uint8_t* input, size_t length, uint8_t* output)
 
 	return (size_t)(out - output);
 }
+
+/**
+ * @brief Init to create the mutex for UART TX writes to prevent clashes.
+ * 
+ * This should be called by the init functions of all UART modules before their
+ * respective tasks are created to ensure that the mutex exists before any UART
+ * task starts running, regardless of init sequence. 
+ * 
+ * @note Subsequent calls are safe no-ops. 
+ */
+void uartTxLockInit(void) 
+{
+  if (uartTxMutex == NULL) 
+	{
+    // Create the UART TX mutex so that only one task can write packets at a time 
+  	uartTxMutex = xSemaphoreCreateMutexStatic(&uartTxMutexBuffer);
+  }
+}
+
+/* ------------------------------- Module End ------------------------------- */

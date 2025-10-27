@@ -53,10 +53,6 @@
 // Initialise a flag to check if initialisation has already been completed
 static bool isInit = false;
 
-// Initialise handle and queue for a UART mutex to prevent concurrent writes
-static SemaphoreHandle_t uartMutex;
-static StaticSemaphore_t uartMutexBuffer;
-
 /* ------------------------------- Public APIs ------------------------------ */
 
 /**
@@ -105,9 +101,6 @@ esp_err_t uartesp32Init(void)
   // Return if failed
   if (error != ESP_OK) return error;
 
-  // Create the UART mutex so that only one task can write packets at a time 
-  uartMutex = xSemaphoreCreateMutexStatic(&uartMutexBuffer);
-
   // Set the isInit flag to prevent re-initialisation
   isInit = true;
 
@@ -131,22 +124,8 @@ esp_err_t uartesp32Init(void)
  */
 bool uartTryWrite(const uint8_t* data, size_t len, UartTxHint* hint)
 {
-  // Take the UART mutex to prevent other tasks from interrupting packet write
-  if (xSemaphoreTake(uartMutex, 0) == pdFALSE)
-  {
-    // Check if hint is being used
-    if (hint != NULL)
-    {
-      // Notify calling function that the UART mutex is unavailable
-      *hint = uartWriteClash;
-    }
-    
-    // Return false since data was not successfully written to the buffer
-    return false; 
-  }
-
   // Check if data is too long to ever fit in TX FIFO ring buffer
-  if (len > ESP_UART_RX_BUF) 
+  if (len > ESP_UART_TX_BUF) 
   {
     // Check if hint is being used
     if (hint != NULL)
@@ -154,9 +133,6 @@ bool uartTryWrite(const uint8_t* data, size_t len, UartTxHint* hint)
       // Notify calling function that the data is too long
       *hint = uartDataTooLong;
     }
-
-    // Give back the UART mutex
-    xSemaphoreGive(uartMutex);
 
     // Return false since data was not successfully written to the buffer
     return false;  
@@ -177,16 +153,13 @@ bool uartTryWrite(const uint8_t* data, size_t len, UartTxHint* hint)
       // Notify calling function that there is not enough space
       *hint = uartBufferTooFull;
     }
-
-    // Give back the UART mutex
-    xSemaphoreGive(uartMutex);
     
     // Return false since data was not successfully written to the buffer
     return false;
   }
 
   // Check if the buffer has completely cleared
-  if (free_space == ESP_UART_RX_BUF)
+  if (free_space == ESP_UART_TX_BUF)
   {
     // Check if hint is being used
     if (hint != NULL)
@@ -222,15 +195,9 @@ bool uartTryWrite(const uint8_t* data, size_t len, UartTxHint* hint)
       *hint = uartBufferTooFull;
     }
 
-    // Give back the UART mutex
-    xSemaphoreGive(uartMutex);
-
     // Return false since not all data was successfully written to the buffer
     return false;
   }
-
-  // Give back the UART mutex
-  xSemaphoreGive(uartMutex);
 
   // Return true since all data was successfully written to the buffer
   return true;
