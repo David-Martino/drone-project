@@ -1,0 +1,25 @@
+# ROS 2 colcon build artifacts
+build/
+install/
+log/
+
+
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# C++/CMake build artifacts
+*.o
+*.so
+*.a
+*.out
+
+# VSCode / IDE files
+.vscode/
+.idea/
+
+# Colcon metadata
+.colcon/

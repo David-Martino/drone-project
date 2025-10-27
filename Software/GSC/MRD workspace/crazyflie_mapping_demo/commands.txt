@@ -1,0 +1,61 @@
+
+
+source install/setup.bash
+
+ros2 run crazyflie_pointcloud multiranger_to_pointcloud 
+
+
+ros2 launch crazyflie_ros2_multiranger_bringup simple_mapper_simulation.launch.py
+
+
+ros2 launch cf3d_nav cf3d_nav_full.launch.py
+
+
+
+
+
+
+
+
+ivans@Drone-Ground-Station:~/read drone 3d mapping rosbags$ ros2 bag record -a
+
+
+ivans@Drone-Ground-Station:~/read drone 3d mapping rosbags$ ros2 bag play rosbag2_2025_10_13-15_24_27/
+
+ivans@Drone-Ground-Station:~/crazyflie_mapping_demo/ros2_ws/src/crazyflie_ros2_multiranger/crazyflie_ros2_multiranger_bringup/config$ ros2 run rviz2 rviz2 -d real_mapping.rviz
+
+ros2 run rviz2 rviz2 -d crazyflie_mapping_demo/ros2_ws/src/crazyflie_ros2_multiranger/crazyflie_ros2_multiranger_bringup/config/real_mapping.rviz
+
+
+
+
+
+
+
+
+
+
+
+
+ros2 run crazyflie_pointcloud multiranger_to_pointcloud 
+
+
+ros2 launch crazyflie_ros2_multiranger_bringup simple_mapper_simulation.launch.py
+
+
+ros2 launch cf3d_nav cf3d_nav_full.launch.py
+
+for sim:
+
+python3 gc_vel_mux.py --ros-args -p odom_topic:=/crazyflie/odom -p height_offset:=0.1
+
+
+
+
+ros2 launch my_sim_master_bringup.py \
+  world_frame_id:=map body_frame_id:=crazyflie/odom \
+  odom_topic:=/crazyflie/odom scan_topic:=/crazyflie/scan \
+  cloud_in:=/crazyflie/pointcloud cmd_vel_topic:=/auto_cmd_vel height_offset:=0.1
+
+
+ros2 launch my_real_master_bringup.py
