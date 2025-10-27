@@ -21,12 +21,11 @@ This will launch the **OctoMap Viewer (OctoVis)** GUI, allowing you to explore t
 
 ## Notes
 
-- Ensure you have **ROS 2 Humble** installed and sourced (`source /opt/ros/humble/setup.bash`).
 - The file `map.bt` must be in your current working directory when running the command, or you can specify its full path, e.g.:
   ```bash
   octovis /path/to/map.bt
   ```
-- No ROS 2 nodes need to be running — `octovis` can open `.bt` files directly.
+
 
 ---
 
@@ -37,12 +36,3 @@ This will launch the **OctoMap Viewer (OctoVis)** GUI, allowing you to explore t
 
 ---
 
-**Example:**
-```bash
-git clone https://github.com/<your-username>/<your-repo>.git
-cd <your-repo>
-sudo apt install ros-humble-octovis
-octovis map.bt
-```
-
-Enjoy exploring the 3D map!
