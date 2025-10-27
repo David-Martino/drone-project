@@ -59,4 +59,6 @@ The critical battery event follows the same landing procedure, triggering 5 seco
     - ORB-SLAM3 (released under GPLv3)
     - Kimberley McGuire's lidar mapping project (released under the MIT License)
 
-- Hardware: The hardware folder content is licensed under
+- Hardware: The hardware folder content is licensed under CC-BY-NC-SA 4.0
+
+- Frame: The frame content is licensed under CC-BY-NC-SA 4.0
