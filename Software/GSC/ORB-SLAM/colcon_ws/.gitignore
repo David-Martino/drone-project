@@ -1,0 +1,6 @@
+log/
+build/
+install/
+bags/
+# ORB vocabulary anywhere (catch-all)
+**/ORBvoc.txt

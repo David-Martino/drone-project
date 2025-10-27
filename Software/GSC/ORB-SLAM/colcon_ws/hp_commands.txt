@@ -1,0 +1,68 @@
+ros2 run image_tools cam2image --ros-args -p device_id:=0 -p width:=640 -p height:=480 --remap image:=/camera/rgb/image_color
+
+#the fixed transform visuaised on rviz
+Tbc: !!opencv-matrix    
+  rows: 4
+  cols: 4
+  dt: f
+  data: [
+     0,  0,  1,  -0.12,
+    -1,  0,  0, -0.18,
+     0, -1,  0,  0.16,
+     0,  0,  0,  1.0]
+
+
+ #the following is my own measured transform of the cam to imu when placed to the right of my touchpad
+Tbc: !!opencv-matrix     #CHAT GAVE ME THIS ONE WHICH I BELIEVE DIDNT ERROR SO MAYBE TRY AFTER
+  rows: 4
+  cols: 4
+  dt: f
+  data: [
+     0, -1,  0,  0.12,
+     0,  0, -1, -0.18,
+     1,  0,  0, -0.16,
+     0,  0,  0,  1.0]
+
+    #this one ^^ seems to create map to its left, so im thinking this one defs wrong axes
+
+
+
+latest chat one
+  data: [
+    1, 0, 0, -0.10,
+    0, 0, 1,  0.17,
+    0,-1, 0,  0.16,
+    0, 0, 0,  1.0]
+
+ros2 run imu phidget_spatial_driver --ros-args -p frame_id:=imu_link -p publish_rate_hz:=100.0 -p accel_in_g:=true -p gyro_in_deg:=true -p calibrate_gyro_bias:=true -p calib_duration_sec:=3.0 
+
+ros2 launch orbslam3_ros2 orbslam3_ros2.launch.py camera_type:=mono start_octomap:=true visualize:=true 
+
+ros2 launch cf3d_nav cf3d_nav_full.launch.py
+
+
+setting camera rate:
+
+v4l2-ctl -d /dev/video0 --list-formats-ext
+
+(dont set to 30 as i think its too much for the pc, so it ends up being unreliable freq, not precise or accurate)
+
+v4l2-ctl -d /dev/video0 --set-parm=15 
+
+(dont think it matters what you set freq param to but just do it anyway. for some reason the v4l2 doesnt actually echo 15 hz if you use it but cma2image does)
+ros2 run image_tools cam2image --ros-args -p device_id:=0 -p width:=640 -p height:=480 --remap image:=/camera/rgb/image_color -p freq:=15
+
+ros2 topic  hz /camera/rgb/image_color 
+
+ivans@Drone-Ground-Station:~/colcon_ws$ python3 odom_to_path.py 
+
+OPEN VINS:
+
+ros2 bag play V1_01_easy
+
+ros2 launch ov_msckf subscribe.launch.py   config:=euroc_mav   use_stereo:=false   max_cameras:=1   rviz_enable:=true
+
+
+
+ros2 run rviz2 rviz2 -d src/orbslam3_ros2/config/ivanRViz2.rviz
+
