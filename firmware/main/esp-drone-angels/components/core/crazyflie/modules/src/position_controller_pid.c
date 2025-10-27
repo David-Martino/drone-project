@@ -96,8 +96,8 @@ static struct this_s this = {
 
   .pidVY = {
     .init = {
-      .kp = 25.0f,
-      .ki = 1.0f,
+      .kp = 15.0f,
+      .ki = 10.0f,
       .kd = 0.0f,
     },
     .pid.dt = DT,
@@ -105,9 +105,9 @@ static struct this_s this = {
 
   .pidVZ = {
     .init = {
-      .kp = 22,
-      .ki = 15,
-      .kd = 0,
+      .kp = 35, // @@ 22
+      .ki = 25, // @@ 15
+      .kd = 0, // @@ 0 
     },
     .pid.dt = DT,
   },
@@ -149,8 +149,8 @@ static struct this_s this = {
   .thrustMin  = 20000,
   #endif
 #else
-  .thrustBase = 24000,
-  .thrustMin  = 5000,
+  .thrustBase = 36000,//@@ 24000,
+  .thrustMin  = 8000, //@@ 5000
 #endif
 
 };

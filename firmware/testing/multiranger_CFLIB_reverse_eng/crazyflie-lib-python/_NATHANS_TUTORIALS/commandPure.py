@@ -44,6 +44,20 @@ def move_box_limit(scf):
                 mc.start_forward()
             time.sleep(0.1)
 
+
+def const_thrust(scf):
+    print("Take off!")
+    cf = scf.cf
+
+    for i in range(50):
+        print(f"{i}")
+        cf.commander.send_setpoint(0, 0, 0, 20000) # 
+        time.sleep(0.2)
+
+    scf.cf.commander.send_setpoint(0, 0, 0, 0)
+    print("stop")
+    scf.cf.commander.send_stop_setpoint()
+
 def hover(scf):
     print("Take off!")
     cf = scf.cf
@@ -78,6 +92,18 @@ def log_pos_callback(timestamp, data, logconf):
     yawReal.append(data['stateEstimate.yaw'])
     yawSP.append(data['controller.yaw'])
 
+def log_mot_callback(timestamp, data, logconf):
+
+    m1 = data["motor.m1"]
+    m2 = data["motor.m2"]
+    m3 = data["motor.m3"]
+    m4 = data["motor.m4"]
+
+    print(f"M1: {m1} \t M2: {m2} \t M3: {m3} \t M4: {m4}")
+
+
+
+
 if __name__ == '__main__':
 
     cflib.crtp.init_drivers()
@@ -87,25 +113,27 @@ if __name__ == '__main__':
         #scf.cf.param.set_value('commander.enHighLevel', '1')
 
         logconf = LogConfig(name='Position', period_in_ms=10)
-        logconf.add_variable('stateEstimate.yaw', 'float')
-        logconf.add_variable('controller.yaw', 'int16_t')
+        logconf.add_variable('motor.m1', 'uint32_t')
+        logconf.add_variable('motor.m2', 'uint32_t')
+        logconf.add_variable('motor.m3', 'uint32_t')
+        logconf.add_variable('motor.m4', 'uint32_t')
         scf.cf.log.add_config(logconf)
-        logconf.data_received_cb.add_callback(log_pos_callback)
+        logconf.data_received_cb.add_callback(log_mot_callback)
 
         scf.cf.platform.send_arming_request(True)
 
-        logconf.start()
+        #logconf.start()
 
-        hover(scf)
+        const_thrust(scf)
         
-        OAdata = [[yawReal],[yawSP]]
-        with open('yaw.csv', 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(['actual', 'set'])   # Header
-            for xi, yi in zip(yawReal, yawSP):
-                writer.writerow([xi, yi])
+        # OAdata = [[yawReal],[yawSP]]
+        # with open('yaw.csv', 'w', newline='') as f:
+        #     writer = csv.writer(f)
+        #     writer.writerow(['actual', 'set'])   # Header
+        #     for xi, yi in zip(yawReal, yawSP):
+        #         writer.writerow([xi, yi])
 
         # Logging Stop
-        logconf.stop()
+        #logconf.stop()
         
             

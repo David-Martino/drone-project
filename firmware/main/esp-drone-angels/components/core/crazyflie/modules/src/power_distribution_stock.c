@@ -92,10 +92,20 @@ void powerDistribution(const control_t *control)
   #ifdef QUAD_FORMATION_X
     int16_t r = control->roll / 2.0f;
     int16_t p = control->pitch / 2.0f;
-    motorPower.m1 = limitThrust(control->thrust - r + 0.75*p + control->yaw);
-    motorPower.m2 = limitThrust(control->thrust - r - 0.9*p - control->yaw);
-    motorPower.m3 = limitThrust(control->thrust + r - 0.9*p + control->yaw);
-    motorPower.m4 = limitThrust(control->thrust + r + 0.75*p - control->yaw);
+
+    #define DEADCAT_MIXING_EN
+    #ifdef DEADCAT_MIXING_EN
+      motorPower.m1 = limitThrust(control->thrust - r + 0.75*p + control->yaw);
+      motorPower.m2 = limitThrust(control->thrust - r - 0.9*p - control->yaw);
+      motorPower.m3 = limitThrust(control->thrust + r - 0.9*p + control->yaw);
+      motorPower.m4 = limitThrust(control->thrust + r + 0.75*p - control->yaw);
+    #else
+      motorPower.m1 = limitThrust(control->thrust - r + p + control->yaw);
+      motorPower.m2 = limitThrust(control->thrust - r - p - control->yaw);
+      motorPower.m3 = limitThrust(control->thrust + r - p + control->yaw);
+      motorPower.m4 = limitThrust(control->thrust + r + p - control->yaw);
+    #endif
+
   #else // QUAD_FORMATION_NORMAL
     motorPower.m1 = limitThrust(control->thrust + control->pitch +
                                control->yaw);

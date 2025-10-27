@@ -21,8 +21,18 @@ BOX_LIMIT = 0.5
 
 position_estimate = [0,0]
 
-xpos = []
-dist = []
+vzList = []
+vzctrlList = []
+zList = []
+vxList = []
+vxctrlList = []
+xList = []
+vyList = []
+vyctrlList = []
+yList = []
+pitchList = []
+cmdList = []
+
 
 def param_deck_flow(_, value_str):
     value = int(value_str)
@@ -48,45 +58,17 @@ def take_off_simple(scf):
     print("Take off!")
     #count  = 0
     with MotionCommander(scf, default_height=DEFAULT_HEIGHT) as mc:
-        time.sleep(2)
+        print("Forward")
+        mc.forward(2, velocity = 0.5)
+
+        #time.sleep(5)
+        #time.sleep(2)at  
         #time.sleep(3)
-        mc.forward(4, velocity=0.3)
+        #mc.forward(4, velocity=0.5)
+        #print("Finished")
+        #time.sleep(10)
         #mc.forward(2,velocity=0.3)
         #mc.stop()
-        # time.sleep(1)
-        #print("Going in a Circle")
-        # mc.circle_right(1)
-        #mc.forward(2, velocity = 0.5)
-        # print("Turning")
-        # mc.turn_right(90)
-        # print("finished")
-        # time.sleep(1)
-
-        #mc.forward(3, velocity = 0.5)
-        # time.sleep(13)
-        # time.sleep(3)
-        # print("Going Right")
-        # mc.right(0.5)
-        # time.sleep(3)
-        # print("Going Back")
-        # mc.back(0.5)
-        # time.sleep(3)
-        # print("Going Left")
-        # mc.left(0.5)
-        # time.sleep(3)
-        # print("Rolling right")
-        # mc.right(0.5)
-        # time.sleep(3)
-        # print("Going Forward")
-        # mc.forward(0.5)
-        # time.sleep(3)
-        # print("Turning Right")
-        # mc.turn_right(90)
-        # time.sleep(2)
-        # print("Turning Left")
-        # mc.turn_left(90)
-        # time.sleep(2)
-        # print("Rolling Left")
         # mc.left(1)
         # time.sleep(3)
         print("Landing!")
@@ -101,8 +83,46 @@ def log_pos_callback(timestamp, data, logconf):
     #print("Height: %d \t Voltage: %d", data['stateEstimate.z'], data['pm.vbat'])
     #position_estimate[0] = data['stateEstimate.x']
     #position_estimate[0] = data['stateEstimate.y']
-    xpos.append(data['stateEstimate.x'])
-    dist.append(data['range.front'])
+    #xpos.append(data['stateEstimate.x'])
+    #dist.append(data['range.front'])
+    # vy = data["stateEstimate.vy"]
+    # vx = data["stateEstimate.vx"]
+    # print(f"vx: {vx} \t vy: {vy}")
+
+    # vzctrl = data["posCtl.targetVZ"]
+    # vz = data["stateEstimate.vz"]
+    # z = data["stateEstimate.z"]
+    # vzList.append(vz)
+    # vzctrlList.append(vzctrl)
+    # zList.append(z)
+
+    vxctrl = data["posCtl.targetVX"]
+    vx = data["stateEstimate.vx"]
+    # x = data["stateEstimate.x"]
+    vxList.append(vx)
+    vxctrlList.append(vxctrl)
+    # xList.append(x)
+
+    # vyctrl = data["posCtl.targetVY"]
+    # vy = data["stateEstimate.vy"]
+    # y = data["stateEstimate.y"]
+    # vyList.append(vy)
+    # vyctrlList.append(vyctrl)
+    # yList.append(y)
+
+    cmd = data["controller.pitch"]
+    pitch = data["stabilizer.pitch"]
+    pitchList.append(pitch)
+    cmdList.append(cmd)
+
+def log_mot_callback(timestamp, data, logconf):
+
+    m1 = data["motor.m1"]
+    m2 = data["motor.m2"]
+    m3 = data["motor.m3"]
+    m4 = data["motor.m4"]
+
+    print(f"M1: {m1} \t M2: {m2} \t M3: {m3} \t M4: {m4}")
 
 if __name__ == '__main__':
 
@@ -114,8 +134,29 @@ if __name__ == '__main__':
 
         # Logging Setup
         logconf = LogConfig(name='Position', period_in_ms=10)
-        logconf.add_variable('stateEstimate.x', 'float')
-        logconf.add_variable('range.front', 'int16_t')
+        #logconf.add_variable('stateEstimate.vx', 'float')
+        # logconf.add_variable('posCtl.targetVZ', 'float')
+        # logconf.add_variable('stateEstimate.vz', 'float')
+        # logconf.add_variable('stateEstimate.z', 'float')
+        logconf.add_variable('posCtl.targetVX', 'float')
+        logconf.add_variable('stateEstimate.vx', 'float')
+        # logconf.add_variable('stateEstimate.x', 'float')
+        # logconf.add_variable('posCtl.targetVY', 'float')
+        # logconf.add_variable('stateEstimate.vy', 'float')
+        # logconf.add_variable('stateEstimate.y', 'float')
+        logconf.add_variable('controller.pitch', 'float')
+        logconf.add_variable('stabilizer.pitch', 'float')
+        
+        #logconf.add_variable('range.front', 'int16_t')
+
+        lg_motor = LogConfig(name='thrust', period_in_ms=10)
+        lg_motor.add_variable('motor.m1', 'uint32_t')
+        lg_motor.add_variable('motor.m2', 'uint32_t')
+        lg_motor.add_variable('motor.m3', 'uint32_t')
+        lg_motor.add_variable('motor.m4', 'uint32_t')
+
+
+
         scf.cf.log.add_config(logconf)
         logconf.data_received_cb.add_callback(log_pos_callback)
 
@@ -131,13 +172,23 @@ if __name__ == '__main__':
         #time.sleep(10)
 
 
+        # with open('v_pid.csv', 'w', newline='') as f:
+        #     writer = csv.writer(f)
+        #     writer.writerow(['vz', 'vzctrl', 'z','vx', 'vxctrl', 'x','vy', 'vyctrl', 'y'])   # Header
+        #     for xi, yi, zi, ai, bi, ci, di, ei, fi in zip(vzList, vzctrlList, zList,vxList, vxctrlList, xList,vyList, vyctrlList, yList):
+        #         writer.writerow([xi, yi, zi, ai, bi, ci, di, ei, fi])
 
-        OAdata = [[xpos],[dist]]
-        with open('fuck.csv', 'w', newline='') as f:
+        # with open('pitch_pid.csv', 'w', newline='') as f:
+        #     writer = csv.writer(f)
+        #     writer.writerow(['vx', 'vxctrl', 'x','vy', 'vyctrl', 'y'])   # Header
+        #     for xi, yi, zi, ai, bi, ci in zip(vxList, vxctrlList, xList,vyList, vyctrlList, yList):
+        #         writer.writerow([xi, yi, zi, ai, bi, ci])\
+
+        with open('pitch_pid.csv', 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['x', 'dist'])   # Header
-            for xi, yi in zip(xpos, dist):
-                writer.writerow([xi, yi])
+            writer.writerow(['pitch', 'cmd', 'vx', 'vxctrl'])   # Header
+            for xi, yi, ai, bi in zip(pitchList, cmdList, vxList, vxctrlList):
+                writer.writerow([xi, yi, ai, bi])
 
         # Logging Stop
         logconf.stop()

@@ -1,0 +1,49 @@
+dataz = readtable("vz_pid.csv")
+datax = readtable("vz_pid.csv")
+datay = readtable("vy_pid.csv")
+
+t = 0.01:0.01:0.01*height(data)
+
+
+% z
+subplot(2,3,1);
+hold on
+grid on
+plot(t, dataz.vz)
+plot(t, dataz.vzctrl)
+legend('vz','control')
+
+theme("light")
+
+subplot(2,3,4); 
+plot(t,data.z)
+
+% x
+subplot(2,3,2);
+hold on
+grid on
+plot(t, data.vx)
+plot(t, data.vxctrl)
+legend('vz','control')
+
+theme("light")
+
+subplot(2,3,5); 
+plot(t,data.x)
+
+% y
+subplot(2,3,3);
+hold on
+grid on
+plot(t, data.vy)
+plot(t, data.vyctrl)
+legend('vz','control')
+
+theme("light")
+
+subplot(2,3,6); 
+plot(t,data.y)
+
+
+
+

@@ -126,18 +126,18 @@ void commanderGetSetpoint(setpoint_t *setpoint, const state_t *state)
 
   if ((currentTime - setpoint->timestamp) > COMMANDER_WDT_TIMEOUT_SHUTDOWN) {
     //@@ CF original Implementation
-    if (enableHighLevel) {
-      crtpCommanderHighLevelGetSetpoint(setpoint, state); // @@ high level commander ignores shutdown command
-    }
-    if (!enableHighLevel || crtpCommanderHighLevelIsStopped()) {
-      memcpy(setpoint, &nullSetpoint, sizeof(nullSetpoint)); // @@ send null set point to drop the drone out of the sky
-    }
+    // if (enableHighLevel) {
+    //   crtpCommanderHighLevelGetSetpoint(setpoint, state); // @@ high level commander ignores shutdown command
+    // }
+    // if (!enableHighLevel || crtpCommanderHighLevelIsStopped()) {
+    //   memcpy(setpoint, &nullSetpoint, sizeof(nullSetpoint)); // @@ send null set point to drop the drone out of the sky
+    // }
 
 
     /* @@ Dell's Angels Auto-land */
-    // if (rangeGet(rangeDown) > MIN_TIMEOUT_HEIGHT) {
-    //   pmSetCriticalFlag();
-    // }
+    if (rangeGet(rangeDown) > MIN_TIMEOUT_HEIGHT) {
+      pmSetCriticalFlag();
+    }
   } else if ((currentTime - setpoint->timestamp) > COMMANDER_WDT_TIMEOUT_STABILIZE) { // @@ Keep the drone stationary 
     xQueueOverwrite(priorityQueue, &priorityDisable);
     

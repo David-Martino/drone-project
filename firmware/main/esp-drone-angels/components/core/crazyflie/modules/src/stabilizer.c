@@ -59,6 +59,8 @@
 #include "static_mem.h"
 #include "rateSupervisor.h"
 
+//#define EMERGENCY_OVERRIDE
+
 #include "obstacle_avoidance.h" // @@ added in 
 
 static bool isInit;
@@ -315,6 +317,9 @@ static void stabilizerTask(void* param)
       checkEmergencyStopTimeout();
 
       checkStops = systemIsArmed();
+      #ifdef EMERGENCY_OVERRIDE
+        emergencyStop = 0;
+      #endif
       if (emergencyStop || (systemIsArmed() == false)) { // I am so fucking dumb, its an OR condition and I wasn't changing the Armed condition
         powerStop();
         //DEBUG_PRINTE("OFF");

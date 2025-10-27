@@ -49,8 +49,9 @@
 #include "stabilizer.h" // @@
 #include "param.h"
 
-#define OFF_DIST 50 // @@ distance (mm) to ground at which motors are turned off.
+#define OFF_DIST 0.05 // @@ distance (mm) to ground at which motors are turned off.
 #define DESCEND_SPEED  0.3 // @@ emergency landing speed (m/s)
+//#define OVERRIDE_LV_SHUTDOWN // @@ macro for auto landing
 //#include "deck.h"
 #define DEBUG_MODULE "PM"
 #include "debug_cf.h"
@@ -170,7 +171,11 @@ static void pmSetBatteryVoltage(float voltage)
  */
 static void pmSystemShutdown(void)
 {
-  criticalFlag = 1;
+  #ifdef OVERRIDE_LV_SHUTDOWN
+    DEBUG_PRINTE("WARNING! LOW BATTERY AUTO SHUTDOWN IS OVERRIDDEN, PROCEED WITH CAUTION.");
+  #else
+    criticalFlag = 1;
+  #endif
 #ifdef ACTIVATE_AUTO_SHUTDOWN
 //TODO: Implement syslink call to shutdown
 #endif

@@ -39,7 +39,7 @@
 //#include "deck.h"
 
 #ifndef CRITICAL_LOW_VOLTAGE
-  #define PM_BAT_CRITICAL_LOW_VOLTAGE  6.4f //@@ original 3.0f
+  #define PM_BAT_CRITICAL_LOW_VOLTAGE  6.5f //@@ original 3.0f
 #else
   #define PM_BAT_CRITICAL_LOW_VOLTAGE   CRITICAL_LOW_VOLTAGE
 #endif
@@ -50,7 +50,7 @@
 #endif
 
 #ifndef LOW_VOLTAGE
-  #define PM_BAT_LOW_VOLTAGE   6.6f // @@ original 3.2f
+  #define PM_BAT_LOW_VOLTAGE   6.8f // @@ original 3.2f
 #else
   #define PM_BAT_LOW_VOLTAGE   LOW_VOLTAGE
 #endif

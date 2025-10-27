@@ -70,8 +70,8 @@
  * 
  */
 
-#define THRESH       300 // OA triggers for ranges below this if velocity > MIN_VEL
-#define THRESH_CRIT   200 // OA triggers for ranges below this, without considering velocity.
+#define THRESH       400 // OA triggers for ranges below this if velocity > MIN_VEL
+#define THRESH_CRIT   300 // OA triggers for ranges below this, without considering velocity.
 #define DHYST        50 // OA detriggers for ranges greater than THRESH+DHYST
 #define MIN_VEL      0.1f // Minum velocity of OA (m/s)
 #define MIN_ALTITUDE   0.1 // Minimum altitude (m)
@@ -162,6 +162,8 @@ void obstacleAvoidanceUpdateSetpoint(setpoint_t *setpoint, state_t *state)
 
             uint8_t velcheck = obstacleAvoidanceRangeVelocityCheck(threats, THRESH, vx, vy, vz);
             uint8_t critcheck = obstacleAvoidanceRangeCheck(threats, THRESH_CRIT); // called in this order so critcheck overrides threats.
+            
+
 
             if (velcheck || critcheck) {
                 // Update State variable
@@ -205,7 +207,7 @@ void obstacleAvoidanceSetVelSetpoint(setpoint_t *setpoint, float vx, float vy, f
 }
 
 /** 
- * @brief Checks all directions for object
+ * @brief Checks all ranges aligned with current direction of motion
  * @return 1 if triggered, 0 if not triggered
  * @param threats pointer to array storing which direction has been triggered in the order [Front, Back, Left, Right, Up]
  * @param limit any ranges below this will get triggered
@@ -244,7 +246,7 @@ uint8_t obstacleAvoidanceRangeVelocityCheck(uint8_t *threats, uint32_t limit, fl
 
         };
     };
-    
+
     // z-axis
     if (vz > MIN_VEL) {
         if (rangeGet(rangeUp) < limit) {
@@ -257,7 +259,7 @@ uint8_t obstacleAvoidanceRangeVelocityCheck(uint8_t *threats, uint32_t limit, fl
 };
 
 /** 
- * @brief Checks all directions for object and 
+ * @brief Checks all ranges in all directions for object, with disregard for the direction of current motion 
  * @return 1 if triggered, 0 if not triggered
  * @param threats pointer to array storing which direction has been triggered in the order [Front, Back, Left, Right, Up]
  * @param limit any ranges below this will get triggered
