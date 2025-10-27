@@ -41,12 +41,12 @@ static struct sockaddr_storage source_addr;
 
 // Define wifi SSID as macro
 #ifndef WIFI_SSID
-#define WIFI_SSID "iPhone98"
+#define WIFI_SSID "ivans"
 #endif
 
 // Define wifi password as macro
 #ifndef WIFI_PWD 
-#define WIFI_PWD "12345678"
+#define WIFI_PWD "Colombia1"
 #endif
 
 //}
