@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>cf3d_cloud_filters</name>
+  <version>0.0.1</version>
+  <description>Temporal point cloud filtering for ORB-SLAM3</description>
+  <maintainer email="you@example.com">Ivan</maintainer>
+  <license>MIT</license>
+
+  <!-- Build tool -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- Build/run deps (add/remove to match your code) -->
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>pcl_conversions</depend>
+  <!-- If you include/subscribe/publish PCL via ROS wrappers, keep this -->
+  <depend>pcl_ros</depend>
+  <!-- If you use Eigen transforms -->
+  <depend>tf2_eigen</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

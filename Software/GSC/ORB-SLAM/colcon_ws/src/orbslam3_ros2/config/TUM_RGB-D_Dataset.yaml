@@ -1,0 +1,58 @@
+%YAML:1.0
+#--------------------------------------------------------------------------------------------
+# Camera Parameters (Kinect Calibration)
+#--------------------------------------------------------------------------------------------
+
+Camera.type: "PinHole"
+
+Camera.fx: 517.3  # Focal length in x
+Camera.fy: 516.5  # Focal length in y
+Camera.cx: 318.6  # Optical center x
+Camera.cy: 255.3  # Optical center y
+
+# Distortion parameters (Kinect has minimal distortion)
+Camera.k1: 0.2624
+Camera.k2: -0.9531
+Camera.p1: -0.0054
+Camera.p2: 0.0026
+Camera.k3: 1.1633
+
+# Camera resolution
+Camera.width: 640
+Camera.height: 480
+
+# Frame rate (Kinect default is ~30 FPS)
+Camera.fps: 30.0
+
+# Depth processing parameters
+ThDepth: 40.0  # Depth threshold for tracking
+# DepthMapFactor: 5000.0  # Conversion factor for depth values (16-bit PNG format)
+DepthMapFactor: 1.0  # Conversion factor for the 32-bit float images in the ROS bag files
+
+# Stereo baseline times focal length (used in depth-based tracking)
+Camera.bf: 40.0
+
+# RGB ordering (Kinect provides RGB images)
+Camera.RGB: true
+
+# ORB Feature Extraction Parameters (Optimized for Kinect tracking)
+ORBextractor.nFeatures: 1500
+ORBextractor.scaleFactor: 1.2
+ORBextractor.nLevels: 8
+ORBextractor.iniThFAST: 25
+ORBextractor.minThFAST: 10
+
+# Initialization settings (for monocular mode)
+# InitMinFeatures: 100
+
+# Viewer settings for visualization
+Viewer.KeyFrameSize: 0.05
+Viewer.KeyFrameLineWidth: 1
+Viewer.GraphLineWidth: 0.9
+Viewer.PointSize: 2
+Viewer.CameraSize: 0.08
+Viewer.CameraLineWidth: 3
+Viewer.ViewpointX: 0.0
+Viewer.ViewpointY: -0.7
+Viewer.ViewpointZ: -3.5
+Viewer.ViewpointF: 500.0

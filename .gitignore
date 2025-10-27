@@ -2,13 +2,3 @@ build/
 sdkconfig
 sdkconfig.old
 venv-uart
-
-#from Ivans work------
-log/
-build/
-install/
-bags/
-# ORB vocabulary anywhere (catch-all)
-**/ORBvoc.txt
-
-#---------------------
