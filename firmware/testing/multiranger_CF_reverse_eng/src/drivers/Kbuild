@@ -1,3 +1,0 @@
-obj-y += src/
-obj-y += bosch/src/
-obj-y += esp32/src/

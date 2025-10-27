@@ -1,63 +1,62 @@
-# drone-project
-ELEC5550 drone project repo
-This project aims to build a drone system capable of autonomously mapping indoor or outdoor building structures in 3D using onboard sensors.
+# ELEC5550 3D Mapping and Navigating Autonomous Drone
+This is the repository for Team 0-05's final year design project for ELEC5550. The project is to build a drone system capable of autonomously mapping indoor spaces in 3D using onboard sensors, while meeting restrictive power and cost constraints (a 2S 800mAh battery and a $500 budget). Navigation is done using ROS2, running on a ground station connected to the drone over Wi-Fi. Mapping is also done on ROS2, based on UZ-SLAMLab's implementation of ORB-SLAM3 for Visual SLAM and Kimberly McGuire's crazyflie_ros2_multiranger repository for the ToF mapping. The flight controller is based on Espressif's ESP-Drone library, which itself is based on Bitcraze's Crazyflie flight kernel.
 
+[picture of drone]
 
-# Push Workflow: This is for updating the repo after you have made changes on your local machine
-cd my-repo<br>
-git status<br>
-git add .<br>
-git commit -m "Add your comment"<br>
-git push
-
-# Pull Workflow: This is for updating the repo on your local machine
-git reset --hard HEAD # WARNING: This is for disregarding local uncommitted changes if you just want the latest repo <br>
-git pull
-
-# Branch Naming
-feature/<task-name>
-bugfix/<fix-description>
-hotfix/<urgency>
-
-# Commit messages
-feat: add GPS sensor integration
-fix: correct PID loop error
-docs: update README with setup steps
-
-# Pull Request Workflow
+# Key features 
+- Visual SLAM 3D mapping using a monocular Raspberry Pi Camera 3
+- Navigation and mapping using an omnidirectional VL53L1 ToF lidar array
+- Onboard obstacle avoidance
+- Automatic emergency landing procedure for communication loss events
+- Integration with ROS with the option for manual control
 
 
 
 
-# ESP-IDF Template
+# Requirement Verification Evidence
+### Test VSM-02: ORB-SLAM3 and Lidar Map
+The maps are exported as OctoMap files (.bt). Examples can be found under the `Examples` folder.
 
-(See the README.md file in the upper level 'examples' directory for more information about examples.)
+[Screenshots of ORB-SLAM and Lidar Maps.]
 
-This is the simplest buildable example. The example is used by command `idf.py create-project`
-that copies the project to user specified path and set it's name. For more information follow the [docs page](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#start-a-new-project)
+### Test LDR-02: Real-time mapping using the ToF array
+
+[Gif of real-time mappiung]
+
+
+### Test FC-04: Obstacle Avoidance
+<center>
+
+![FC-05 Verfication](figures/FC04.gif)
+
+</center>
+
+### Test FC-05: Communication Loss Emergency Landing
+The critical battery event follows the same landing procedure, triggering 5 seconds after the event is detected.
+<center>
+
+![FC-05 Verfication](figures/FC05-Vert.gif)
+
+</center>
+
+# Issues
+- Motors overheating due to cheap motors and high weight.
+- IMU drift.
+- ORB-SLAM3 map is not scaled correctly.
+- Does not last for the required 3 minute flight time.
+
+# Future Work
+- Upgrading the FC MCU from an ESP32-S3 to an ESP32-P4. This MCU has hardware H.264 encoding, allowing us to remove the Raspberry Pi and hence vastly reduce the size and weight of the platform.
+- Upgrading from visual SLAM to a visual-inertial SLAM using the IMU data for improved map accuracy.
+- Changing frame to a more stiff carbon frame (the 3D printed ABS frame is quite flexible, although its unclear if the stability is actually affected by this)
 
 
 
-## How to use example
-We encourage the users to use the example as a template for the new projects.
-A recommended way is to follow the instructions on a [docs page](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#start-a-new-project).
+# Licence
+- Firmware: The firmware folder content is licensed under LGPL-3.0
 
-## Example folder contents
+- Software: The software folder content is released under GPLv3. The dependencies in this workspace are listed below. For a full list of the dependency's licenses, refer to their documentation.
+    - ORB-SLAM3 (released under GPLv3)
+    - Kimberley McGuire's lidar mapping project (released under the MIT License)
 
-The project **sample_project** contains one source file in C language [main.c](main/main.c). The file is located in folder [main](main).
-
-ESP-IDF projects are built using CMake. The project build configuration is contained in `CMakeLists.txt`
-files that provide set of directives and instructions describing the project's source files and targets
-(executable, library, or both). 
-
-Below is short explanation of remaining files in the project folder.
-
-```
-├── CMakeLists.txt
-├── main
-│   ├── CMakeLists.txt
-│   └── main.c
-└── README.md                  This is the file you are currently reading
-```
-Additionally, the sample project contains Makefile and component.mk files, used for the legacy Make based build system. 
-They are not used or needed when building with CMake and idf.py.
+- Hardware: The hardware folder content is licensed under

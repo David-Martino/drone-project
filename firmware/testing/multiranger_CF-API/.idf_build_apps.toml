@@ -1,6 +1,0 @@
-paths = "."
-check_warnings = false
-build_dir = "build_@t"
-manifest_filepatterns = [
-    '**/.build-test-rules.yml',
-]
