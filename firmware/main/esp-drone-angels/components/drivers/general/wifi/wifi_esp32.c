@@ -31,8 +31,26 @@
 
 static struct sockaddr_storage source_addr;
 
-static char WIFI_SSID[32] = "";
-static char WIFI_PWD[64] = CONFIG_WIFI_PASSWORD;
+// EDIT {
+
+// Commment out static string initialisation of wifi SSID
+// static char WIFI_SSID[32] = "";
+
+// Comment out static string definition of wifi password
+// static char WIFI_PWD[64] = CONFIG_WIFI_PASSWORD;
+
+// Define wifi SSID as macro
+#ifndef WIFI_SSID
+#define WIFI_SSID "iPhone98"
+#endif
+
+// Define wifi password as macro
+#ifndef WIFI_PWD 
+#define WIFI_PWD "12345678"
+#endif
+
+//}
+
 static uint8_t WIFI_CH = CONFIG_WIFI_CHANNEL;
 #define WIFI_MAX_STA_CONN CONFIG_WIFI_MAX_STA_CONN
 
@@ -67,15 +85,102 @@ static uint8_t calculate_cksum(void *data, size_t len)
 static void wifi_event_handler(void *arg, esp_event_base_t event_base,
                                int32_t event_id, void *event_data)
 {
-    if (event_id == WIFI_EVENT_AP_STACONNECTED) {
-        wifi_event_ap_staconnected_t *event = (wifi_event_ap_staconnected_t *) event_data;
-        DEBUG_PRINT_LOCAL("station" MACSTR "join, AID=%d", MAC2STR(event->mac), event->aid);
+    // EDIT {
 
-    } else if (event_id == WIFI_EVENT_AP_STADISCONNECTED) {
-        wifi_event_ap_stadisconnected_t *event = (wifi_event_ap_stadisconnected_t *) event_data;
-        DEBUG_PRINT_LOCAL("station" MACSTR "leave, AID=%d", MAC2STR(event->mac), event->aid);
+    // Comment out AP-related debug messaging
+    // if (event_id == WIFI_EVENT_AP_STACONNECTED) {
+    //     wifi_event_ap_staconnected_t *event = (wifi_event_ap_staconnected_t *) event_data;
+    //     DEBUG_PRINT_LOCAL("station" MACSTR "join, AID=%d", MAC2STR(event->mac), event->aid);
+
+    // } else if (event_id == WIFI_EVENT_AP_STADISCONNECTED) {
+    //     wifi_event_ap_stadisconnected_t *event = (wifi_event_ap_stadisconnected_t *) event_data;
+    //     DEBUG_PRINT_LOCAL("station" MACSTR "leave, AID=%d", MAC2STR(event->mac), event->aid);
+    // }
+
+    // Handle events with WIFI_EVENT base
+    switch (event_id)
+    {
+        case WIFI_EVENT_WIFI_READY:
+        {
+            DEBUG_PRINTI("Wifi is ready");
+            break;
+        }
+        case WIFI_EVENT_STA_START:
+        {
+            DEBUG_PRINTI("Wifi station started");
+            DEBUG_PRINTI("Attempting to connect...");
+            esp_wifi_connect();
+            break;
+        }
+        case WIFI_EVENT_STA_STOP:
+        {
+            DEBUG_PRINTI("Wifi station stopped");
+            break;
+        }
+        case WIFI_EVENT_STA_CONNECTED:
+        {
+            wifi_event_sta_connected_t *e = (wifi_event_sta_connected_t *)event_data;
+            char ssid[33] = {0};
+            size_t n = (e->ssid_len < sizeof(ssid)-1) ? e->ssid_len : sizeof(ssid)-1;
+            memcpy(ssid, e->ssid, n);
+            DEBUG_PRINTI("Wifi connected: ssid='%s' bssid=" MACSTR " ch=%u auth=%d", ssid, MAC2STR(e->bssid), e->channel, e->authmode);
+            DEBUG_PRINTI("Awaiting IP assignment...");
+            break;
+        }
+        case WIFI_EVENT_STA_DISCONNECTED:
+        {
+            wifi_event_sta_disconnected_t *e = (wifi_event_sta_disconnected_t *)event_data;
+            char ssid[33] = {0};
+            size_t n = (e->ssid_len < sizeof(ssid)-1) ? e->ssid_len : sizeof(ssid)-1;
+            memcpy(ssid, e->ssid, n);
+            DEBUG_PRINTI("Wifi disconnected: ssid='%s' reason=%u", ssid, e->reason);
+            DEBUG_PRINTI("Attempting to reconnect...");
+            isUDPConnected = false;
+            esp_wifi_connect();
+            break;
+        }
+        case WIFI_EVENT_STA_AUTHMODE_CHANGE:
+        {
+            wifi_event_sta_authmode_change_t *e = (wifi_event_sta_authmode_change_t *)event_data;
+            DEBUG_PRINTI("Wifi AP changed auth mode: %d -> %d", e->old_mode, e->new_mode);
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }
+
+    // }
+}
+
+// EDIT {
+
+// Create IP_EVENT handler
+static void ip_event_handler(void *arg, esp_event_base_t event_base,
+                               int32_t event_id, void *event_data)
+{
+    // Handle events with IP_EVENT base
+    switch(event_id)
+    {
+        case IP_EVENT_STA_GOT_IP:
+            ip_event_got_ip_t *e = (ip_event_got_ip_t *)event_data;
+            char ip[16], gw[16], nm[16];
+            ip4addr_ntoa_r(&e->ip_info.ip,      ip, sizeof(ip));
+            ip4addr_ntoa_r(&e->ip_info.gw,      gw, sizeof(gw));
+            ip4addr_ntoa_r(&e->ip_info.netmask, nm, sizeof(nm));
+            DEBUG_PRINTI("IP assigned: ip=%s gw=%s netmask=%s", ip, gw, nm);
+            break;
+        case IP_EVENT_STA_LOST_IP:
+            DEBUG_PRINTI("IP lost");
+            isUDPConnected = false;
+            break;
+        default:
+            break;
     }
 }
+
+// }
 
 bool wifiTest(void)
 {
@@ -261,10 +366,30 @@ void wifiInit(void)
     DEBUG_QUEUE_MONITOR_REGISTER(udpDataTx);
 
     espnow_storage_init();
-    esp_netif_t *ap_netif = NULL;
+
+    // EDIT {
+
+    // Comment out the initialisation of the ap_netif esp-netif config
+    // esp_netif_t *ap_netif = NULL;
+
+    // Initialise the sta_netif esp-netif config
+    esp_netif_t *sta_netif = NULL;
+
+    // }
+
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
-    ap_netif = esp_netif_create_default_wifi_ap();
+
+    // EDIT {
+    
+    // Comment out the creation of the default AP esp-netif config
+    // ap_netif = esp_netif_create_default_wifi_ap();
+
+    // Create the default station esp-netif config
+    sta_netif = esp_netif_create_default_wifi_sta();
+
+    // }
+
     uint8_t mac[6];
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
@@ -276,48 +401,128 @@ void wifiInit(void)
                     NULL,
                     NULL));
 
-    ESP_ERROR_CHECK(esp_wifi_get_mac(ESP_IF_WIFI_AP, mac));
-    sprintf(WIFI_SSID, "%s_%02X%02X%02X%02X%02X%02X", CONFIG_WIFI_BASE_SSID, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    // EDIT {
 
+    // Register IP_EVENT handler
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT,
+                    ESP_EVENT_ANY_ID,
+                    &ip_event_handler,
+                    NULL,
+                    NULL));
+    
+    // }
+
+    // EDIT {
+
+    // Comment out retrieving MAC address
+    // ESP_ERROR_CHECK(esp_wifi_get_mac(ESP_IF_WIFI_AP, mac));
+    
+    // Comment out unique WIFI_SSID creation from MAC address
+    // sprintf(WIFI_SSID, "%s_%02X%02X%02X%02X%02X%02X", CONFIG_WIFI_BASE_SSID, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    
+    //}
+
+    // EDIT {
+
+    // Initialise char array to hold formatted MAC address
+    char mac_address[32] = "";
+
+    // Retrieve MAC address
+    ESP_ERROR_CHECK(esp_wifi_get_mac(ESP_IF_WIFI_STA, mac));
+    
+    // Format MAC address into a string
+    sprintf(mac_address, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+    // Print string via debug
+    DEBUG_PRINTI("Drone MAC address: %s", mac_address);
+    // }
+
+    // EDIT {
+
+    // Comment out creating AP wifi network config
+    // wifi_config_t wifi_config = {
+    //     .ap = {
+    //         .channel = WIFI_CH,
+    //         .max_connection = WIFI_MAX_STA_CONN,
+    //         .authmode = WIFI_AUTH_WPA_WPA2_PSK,
+    //     },
+    // };
+
+    // memcpy(wifi_config.ap.ssid, WIFI_SSID, strlen(WIFI_SSID) + 1) ;
+    // wifi_config.ap.ssid_len = strlen(WIFI_SSID);
+    // memcpy(wifi_config.ap.password, WIFI_PWD, strlen(WIFI_PWD) + 1) ;
+
+    // if (strlen(WIFI_PWD) == 0) {
+    //     wifi_config.ap.authmode = WIFI_AUTH_OPEN;
+    // }
+
+    // Create station wifi network config
     wifi_config_t wifi_config = {
-        .ap = {
-            .channel = WIFI_CH,
-            .max_connection = WIFI_MAX_STA_CONN,
-            .authmode = WIFI_AUTH_WPA_WPA2_PSK,
-        },
+        .sta = {
+            .channel = 0,  // I.e., unknown
+        }
     };
 
-    memcpy(wifi_config.ap.ssid, WIFI_SSID, strlen(WIFI_SSID) + 1) ;
-    wifi_config.ap.ssid_len = strlen(WIFI_SSID);
-    memcpy(wifi_config.ap.password, WIFI_PWD, strlen(WIFI_PWD) + 1) ;
+    // Explicit copy of string literals to avoid compile warnings
+    strlcpy((char*)wifi_config.sta.ssid,     WIFI_SSID, sizeof(wifi_config.sta.ssid));
+    strlcpy((char*)wifi_config.sta.password, WIFI_PWD,  sizeof(wifi_config.sta.password));
 
-    if (strlen(WIFI_PWD) == 0) {
-        wifi_config.ap.authmode = WIFI_AUTH_OPEN;
-    }
+    // }
 
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
-    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_config));
+    // EDIT {
+
+    // Comment out setting the wifi mode to AP
+    // ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
+
+    // Set the wifi mode to station
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+
+    // }
+
+    // EDIT {
+
+    // Comment out setting the config as an AP
+    // ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_config));
+
+    // Set the config as a station
+    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
+
+    // }
+
     ESP_ERROR_CHECK(esp_wifi_start());
-    esp_wifi_set_channel(WIFI_CH, WIFI_SECOND_CHAN_NONE);
+    
+    // EDIT {
+
+    // Comment out setting the wifi channel
+    // esp_wifi_set_channel(WIFI_CH, WIFI_SECOND_CHAN_NONE);
+
+    // }
+
     espnow_config_t espnow_config = ESPNOW_INIT_CONFIG_DEFAULT();
     espnow_init(&espnow_config);
     esp_event_handler_register(ESP_EVENT_ESPNOW, ESP_EVENT_ANY_ID, app_espnow_event_handler, NULL);
     ESP_ERROR_CHECK(espnow_ctrl_responder_bind(30 * 1000, -55, NULL));
     espnow_ctrl_responder_data(espnow_ctrl_data_cb);
-    esp_netif_ip_info_t ip_info = {
-        .ip.addr = ipaddr_addr("192.168.43.42"),
-        .netmask.addr = ipaddr_addr("255.255.255.0"),
-        .gw.addr      = ipaddr_addr("192.168.43.42"),
-    };
-    ESP_ERROR_CHECK(esp_netif_dhcps_stop(ap_netif));
-    ESP_ERROR_CHECK(esp_netif_set_ip_info(ap_netif, &ip_info));
-    ESP_ERROR_CHECK(esp_netif_dhcps_start(ap_netif));
-    DEBUG_PRINT_LOCAL("wifi_init_softap complete.SSID:%s password:%s", WIFI_SSID, WIFI_PWD);
+
+    // EDIT {
+
+    // Comment out setting AP's IP info
+    // esp_netif_ip_info_t ip_info = {
+    //     .ip.addr = ipaddr_addr("192.168.43.42"),
+    //     .netmask.addr = ipaddr_addr("255.255.255.0"),
+    //     .gw.addr      = ipaddr_addr("192.168.43.42"),
+    // };
+    // ESP_ERROR_CHECK(esp_netif_dhcps_stop(ap_netif));
+    // ESP_ERROR_CHECK(esp_netif_set_ip_info(ap_netif, &ip_info));
+    // ESP_ERROR_CHECK(esp_netif_dhcps_start(ap_netif));
+    // DEBUG_PRINT_LOCAL("wifi_init_softap complete.SSID:%s password:%s", WIFI_SSID, WIFI_PWD);
+
+    // }
 
     if (udp_server_create(NULL) == ESP_FAIL) {
-        DEBUG_PRINT_LOCAL("UDP server create socket failed");
+        DEBUG_PRINTE("UDP server create socket failed");
     } else {
-        DEBUG_PRINT_LOCAL("UDP server create socket succeed");
+        DEBUG_PRINTI("UDP server create socket succeed");
     }
     xTaskCreate(udp_server_tx_task, UDP_TX_TASK_NAME, UDP_TX_TASK_STACKSIZE, NULL, UDP_TX_TASK_PRI, NULL);
     xTaskCreate(udp_server_rx_task, UDP_RX_TASK_NAME, UDP_RX_TASK_STACKSIZE, NULL, UDP_RX_TASK_PRI, NULL);

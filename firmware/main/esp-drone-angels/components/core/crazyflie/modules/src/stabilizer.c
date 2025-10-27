@@ -50,6 +50,11 @@
 #include "power_distribution.h"
 //#include "collision_avoidance.h"
 
+// EDIT{
+#include "queue.h"
+#include "semphr.h"
+// }
+
 #include "estimator.h"
 //#include "usddeck.h" //usddeckLoggingMode_e
 #include "quatcompress.h"
@@ -82,6 +87,18 @@ static control_t control;
 
 static StateEstimatorType estimatorType;
 static ControllerType controllerType;
+
+// EDIT{
+
+// Initialise FreeRTOS queue for latest state received from KALMAN task
+static xQueueHandle kalmanStateQueue;
+STATIC_MEM_QUEUE_ALLOC(kalmanStateQueue, 1, sizeof(state_t));
+
+// Initialise semaphore for blocking/unblocking UART task
+static xSemaphoreHandle uartReady;
+static StaticSemaphore_t uartReadyBuffer;
+
+//}
 
 typedef enum { configureAcc, measureNoiseFloor, measureProp, testBattery, restartBatTest, evaluateResult, testDone } TestState;
 #ifdef RUN_PROP_TEST_AT_STARTUP
@@ -213,6 +230,16 @@ void stabilizerInit(StateEstimatorType estimator)
   estimatorType = getStateEstimator();
   controllerType = getControllerType();
 
+  // EDIT{
+  
+  // Create the uartReady semaphore for blocking/unblocking UART task
+  uartReady = xSemaphoreCreateBinaryStatic(&uartReadyBuffer);
+
+  // Create FreeRTOS queue for latest state received from KALMAN task
+  kalmanStateQueue = STATIC_MEM_QUEUE_CREATE(kalmanStateQueue);
+
+  // }
+
   STATIC_MEM_TASK_CREATE(stabilizerTask, stabilizerTask, STABILIZER_TASK_NAME, NULL, STABILIZER_TASK_PRI);
 
   isInit = true;
@@ -301,6 +328,14 @@ static void stabilizerTask(void* param)
       }
 
       stateEstimator(&state, &sensorData, &control, tick);
+
+      // EDIT{
+
+      // Overwrite data in kalmanStateQueue with latest state received from KALMAN task
+      xQueueOverwrite(kalmanStateQueue, &state);
+
+      // }
+
       compressState();
 
       commanderGetSetpoint(&setpoint, &state); // Fetches the CRTP setpoint from the queue
@@ -344,8 +379,30 @@ static void stabilizerTask(void* param)
         rateWarningDisplayed = true;
       }
     }
+
+    // EDIT{
+
+    // Give the uartReady semaphore to unblock the UART task
+    xSemaphoreGive(uartReady);
+
+    //}
   }
 }
+
+// EDIT{
+
+/**
+ * @brief Receive the kalman-filtered state from the queue into a variable
+ *
+ * Note this consumes the data from the queue, so should only be called once
+ * per stabilizer loop.
+ */
+bool readKalmanStateQueue(state_t *state)
+{
+  return (xQueueReceive(kalmanStateQueue, state, 0));
+}
+
+//}
 
 void stabilizerSetEmergencyStop()
 {
@@ -569,6 +626,24 @@ static void testProps(sensorData_t *sensors)
     testState = testDone;
   }
 }
+
+// EDIT{
+
+/**
+ * @brief Takes the uartReady semaphore, blocking until ready.
+ *
+ * The various forms of IMU data are saved to queues as they are generated in
+ * each control loop, but the uartReady semaphore is only given at the end of
+ * each stabilizer loop to minimise the risk of the UART task impacting the
+ * stability of the control loop. 
+ */
+void uartWaitDataReady(void)
+{
+  xSemaphoreTake(uartReady, portMAX_DELAY);
+}
+
+//}
+
 PARAM_GROUP_START(health)
 PARAM_ADD(PARAM_UINT8, startPropTest, &startPropTest)
 PARAM_GROUP_STOP(health)

@@ -27,6 +27,7 @@ idf_component_register(SRCS "./hal/src/buzzer.c"
                 "./modules/src/estimator_complementary.c"
                 "./modules/src/estimator_kalman.c"
                 "./modules/src/estimator.c"
+                "./modules/src/imu_uart.c"
                 "./modules/src/kalman_core.c"
                 "./modules/src/kalman_supervisor.c"
                 "./modules/src/log.c"
@@ -53,6 +54,8 @@ idf_component_register(SRCS "./hal/src/buzzer.c"
                 "./modules/src/sysload.c"
                 "./modules/src/system.c"
                 "./modules/src/trigger.c"
+                "./modules/src/uart_helpers.c"
+                "./modules/src/uart_sync.c"
                 "./modules/src/worker.c"
                 "./utils/src/abort.c"
                 "./utils/src/cfassert.c"
@@ -71,7 +74,7 @@ idf_component_register(SRCS "./hal/src/buzzer.c"
                 "./utils/src/version.c"
                 "./utils/src/rateSupervisor.c"
                 INCLUDE_DIRS "./hal/interface" "./modules/interface" "./utils/interface"
-                REQUIRES i2c_bus deck mpu6050 ms5611 hmc5883l pmw3901 vl53l1 vl53l0 platform config led eeprom dsp_lib motors wifi adc esp_timer multiranger mmc5983ma)
+                REQUIRES i2c_bus deck mpu6050 ms5611 hmc5883l pmw3901 vl53l1 vl53l0 platform config led eeprom dsp_lib motors wifi adc esp_timer uart multiranger mmc5983ma)
 
 idf_component_get_property( FREERTOS_ORIG_INCLUDE_PATH freertos ORIG_INCLUDE_PATH)
 target_include_directories(${COMPONENT_TARGET} PUBLIC

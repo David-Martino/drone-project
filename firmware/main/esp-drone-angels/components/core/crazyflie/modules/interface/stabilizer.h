@@ -64,5 +64,35 @@ void stabilizerResetEmergencyStop();
  */
 void stabilizerSetEmergencyStopTimeout(int timeout);
 
+// EDIT{
+
+/**
+ * @brief Takes the uartReady semaphore, blocking until available.
+ *
+ * The various forms of IMU data are saved to queues as they are generated in
+ * each control loop, but the uartReady semaphore is only given at the end of
+ * each stabilizer loop to minimise the risk of the UART task impacting the
+ * stability of the control loop and to ensure all possiblly requested data 
+ * types are available. 
+ */
+void uartWaitDataReady(void);
+
+ /**
+ * @brief Receive one kalman-filtered state sample from the queue.
+ *
+ * Copies the latest kalman-filtered state data from it's queue into @p state.
+ *
+ * @note This call consumes one item from the queue; call it at most once per
+ *       stabilizer loop.
+ *
+ * @param[out] state Pointer to destination struct that receives the data.
+ *
+ * @retval true  A sample was available and written to @p state.
+ * @retval false No sample was available; @p state is not modified.
+ */
+bool readKalmanStateQueue(state_t *state);
+
+//}
+
 
 #endif /* STABILIZER_H_ */
