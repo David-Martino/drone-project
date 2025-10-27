@@ -1,0 +1,40 @@
+{
+  "files.associations": {
+    "pca95x4.h": "c",
+    "param.h": "c",
+    "mpu6050.h": "c",
+    "sensors_mpu6050_hm5883l_ms5611.h": "c",
+    "i2cdev.h": "c",
+    "deck_spi.h": "c",
+    "ms5611.h": "c",
+    "deck_digital.h": "c",
+    "static_mem.h": "c",
+    "stabilizer_types.h": "c",
+    "vl53l1x.h": "c",
+    "vl53l1x_api.h": "c",
+    "vl53l1_types.h": "c",
+    "log.h": "c",
+    "i2cdevi2c0.h": "c",
+    "i2c_drv.h": "c",
+    "zranger2.h": "c",
+    "multiranger.h": "c",
+    "range.h": "c",
+    "system.h": "c",
+    "hmc5883l.h": "c",
+    "pm_esplane.h": "c",
+    "crtp_commander.h": "c",
+    "attitude_controller.h": "c",
+    "math3d.h": "c",
+    "stabilizer.h": "c",
+    "motors.h": "c",
+    "obstacle_avoidance.h": "c"
+  },
+  "idf.openOcdConfigs": [
+    "board/esp32s3-builtin.cfg"
+  ],
+  "idf.customExtraVars": {
+    "IDF_TARGET": "esp32s3"
+  },
+  "idf.flashType": "UART",
+  "idf.portWin": "COM6"
+}

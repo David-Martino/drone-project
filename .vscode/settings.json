@@ -1,7 +1,7 @@
 {
   "C_Cpp.intelliSenseEngine": "default",
   "idf.espIdfPathWin": "C:\\Users\\Natha\\esp\\v5.2.2\\esp-idf",
-  "idf.pythonInstallPath": "C:\\Users\\Natha\\.espressif\\tools\\idf-python\\3.11.2\\python.exe",
+  "idf.pythonInstallPath": "/usr/bin/python3",
   "idf.openOcdConfigs": [
     "board/esp32c3-builtin.cfg"
   ],
