@@ -31,7 +31,10 @@ This will launch the **OctoMap Viewer (OctoVis)** GUI, allowing you to explore t
 
 ## Preview
 
+
 ![OctoMap preview](map_example.png)
+
+![OctoMap preview](orbslam3_map.png)
 
 
 ---
