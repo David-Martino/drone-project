@@ -1,0 +1,10 @@
+Output: Export STEP
+Type  : ExportSTEP
+From  : Variant [[No Variations]] of PCB Document [FlowdeckPCB1.PcbDoc]
+   Generated File[FlowdeckPCB1.step]
+
+
+Files Generated   : 1
+Documents Printed : 0
+
+Finished Output Generation At 1:07:33 PM On 28/10/2025

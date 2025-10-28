@@ -1,0 +1,24 @@
+Altium Designer Pick and Place Locations
+C:\Users\Public\Documents\Altium\Drone ToF\Project Outputs for Drone ToF\Pick Place\Pick Place for ToF_Main.txt
+
+========================================================================================================================
+File Design Information:
+
+Date:       28/10/25
+Time:       13:06
+Revision:   2393c65481d6c2be3eab4d5ea761a57535ec444f
+Variant:    No variations
+Units used: mil
+
+Designator   Comment                             Layer       Footprint                        Center-X(mil) Center-Y(mil) Rotation Description                                                                                                
+J5           240-004                             TopLayer    HDRV6W64P0X254_1X6_1524X254X909P 3936.614      2562.992      0        Connector                                                                                                  
+RANGER_DECK1 S4B-XH-A(LF)(SN)                    BottomLayer JST-S4B-XH-A(LF)(SN)_V           3759.843      2931.102      270      "Male Header, Pitch 2.5 mm, 1 x 4 Position, Height 6.1 mm, Tail Length 3.4 mm, -25 to 85 degC, RoHS, Bulk" 
+J7           240-004                             TopLayer    HDRV6W64P0X254_1X6_1524X254X909P 3936.614      3732.284      180      Connector                                                                                                  
+J3           240-004                             TopLayer    HDRV6W64P0X254_1X6_1524X254X909P 3358.268      3150.000      270      Connector                                                                                                  
+J1           240-004                             TopLayer    HDRV6W64P0X254_1X6_1524X254X909P 4507.874      3148.425      90       Connector                                                                                                  
+R2           "Resistor 10k +/-1% 0603 100 mW"    TopLayer    RESC1608X55X25ML10T15            4255.905      3303.150      180      "Chip Resistor, 10 KOhm, +/- 1%, 01 W, -55 to 155 degC, 0603 (1608 Metric)"                                
+IC3          VL53L1CXV0FY_1                      TopLayer    VL53L1CXV0FY1                    4255.905      3141.732      90       "Integrated Circuit"                                                                                       
+IC2          PCA9534DWR                          TopLayer    SOIC127P1030X265-16N             3851.378      3401.772      180      "Integrated Circuit"                                                                                       
+C4           "Capacitor 100 nF +/-10% 50 V 0603" TopLayer    CAPC1608X90X40NL10T20            4275.591      2996.063      0        "Chip Capacitor, 100 nF, +/- 10%, 50 V, 0603 (1608 Metric)"                                                
+C5           "Capacitor 4.7µF +/-20% 10V 0603"   TopLayer    CAPC0603(1608)100_L              4275.591      2940.945      0        "Chip Capacitor, 4.7µF +/-20%, 10V, 0603, Thickness 1 mm"                                                  
+C2           "Capacitor 100 nF +/-10% 50 V 0603" TopLayer    CAPC1608X90X40NL10T20            3633.858      3130.905      270      "Chip Capacitor, 100 nF, +/- 10%, 50 V, 0603 (1608 Metric)"                                                

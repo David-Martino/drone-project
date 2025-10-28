@@ -11,7 +11,7 @@ This is the repository for Team 0-05's final year design project for ELEC5550. T
 - Visual SLAM 3D mapping using a monocular Raspberry Pi Camera 3
 - Navigation and mapping using an omnidirectional VL53L1 ToF lidar array
 - Onboard obstacle avoidance
-- Automatic emergency landing procedure for communication loss events
+- Automatic emergency landing procedure for communication loss or critically low battery events.
 - Integration with ROS with the option for manual control
 
 
@@ -21,7 +21,15 @@ This is the repository for Team 0-05's final year design project for ELEC5550. T
 ### Test VSM-02: ORB-SLAM3 and Lidar Map
 The maps are exported as OctoMap files (.bt). Examples can be found under the `Examples` folder.
 
-[Screenshots of ORB-SLAM and Lidar Maps.]
+ORB-SLAM3             |  ToF Array
+:-------------------------:|:-------------------------:
+![LDR-02 Verfication](Examples/orbslam3_map.png)  |  ![LDR-02 Verfication](Examples/map_example.png)
+
+<center>
+
+
+
+</center>
 
 ### Test LDR-02: Real-time mapping using the ToF array
 
@@ -48,16 +56,18 @@ The critical battery event follows the same landing procedure, triggering 5 seco
 </center>
 
 # Issues
-- Motors overheating due to cheap motors and high weight.
-- IMU drift.
+- Cheap 1104 BLDC motors overheating after ~40 seconds of flight time.
+- Significant positional drift while publishing velocity commands.
 - ORB-SLAM3 map is not scaled correctly.
-- Does not last for the required 3 minute flight time.
+- Optical Flow Deck could not be manufactured easily. A VL53L1 breakout board and a PMW3901 breakout board were used for the demonstration.
 
 # Future Work
 - Upgrading the FC MCU from an ESP32-S3 to an ESP32-P4. This MCU has hardware H.264 encoding, allowing us to remove the Raspberry Pi and hence vastly reduce the size and weight of the platform.
 - Upgrading from visual SLAM to a visual-inertial SLAM using the IMU data for improved map accuracy.
 - Changing frame to a more stiff carbon frame (the 3D printed ABS frame is quite flexible, although its unclear if the stability is actually affected by this)
-
+- Custom BLDC ESCs mounted in a more secure location
+- Frontier exploration scheme to deterministically map an entire space.
+- Improve manufacturability of Optical Flow Deck by extending the pads of the PMW3901 and VL53L1 sensors out from beneath of the component.
 
 
 # Licence

@@ -1,0 +1,33 @@
+Altium Designer Pick and Place Locations
+C:\Users\Public\Documents\Altium\Flowdeck ELEC5550 Drone\Project Outputs for Flowdeck ELEC5550 Drone\Pick Place\Pick Place for FlowdeckPCB1.txt
+
+========================================================================================================================
+File Design Information:
+
+Date:       28/10/25
+Time:       13:07
+Revision:   907ef1412ba29cf383f392de0167542aac400768
+Variant:    No variations
+Units used: mil
+
+Designator    Comment                             Layer    Footprint             Center-X(mil) Center-Y(mil) Rotation Description                                                                 
+MAIN1         S8B-XH-A(LF)(SN)                    TopLayer FP-S8B-XH-A_LF_SN-MFG 1415.827      2405.000      270      "Conn Shrouded Header (4 Sides) HDR 8 POS 2.5mm Solder RA Thru-Hole Box"    
+U1            ME6211C18M5G-N                      TopLayer SOT95P245X145-5N      1690.000      2745.000      0        "VIN=6.5V Vo=1.8V Io=600mA"                                                 
+ToF_SENSOR1   VL53L1CXV0FY_1                      TopLayer VL53L1CXV0FY1         1761.496      2446.496      90       "Integrated Circuit"                                                        
+R5            "Resistor 10k +/-1% 0603 100 mW"    TopLayer RESC1608X55X25ML10T15 1705.000      2075.472      270      "Chip Resistor, 10 KOhm, +/- 1%, 01 W, -55 to 155 degC, 0603 (1608 Metric)" 
+R4            "Resistor 10k +/-1% 0603 100 mW"    TopLayer RESC1608X55X25ML10T15 1720.000      2224.528      90       "Chip Resistor, 10 KOhm, +/- 1%, 01 W, -55 to 155 degC, 0603 (1608 Metric)" 
+R3            "Resistor 10k +/-1% 0603 100 mW"    TopLayer RESC1608X55X25ML10T15 1680.000      1970.000      180      "Chip Resistor, 10 KOhm, +/- 1%, 01 W, -55 to 155 degC, 0603 (1608 Metric)" 
+R2            "Resistor 10k +/-1% 0603 100 mW"    TopLayer RESC1608X55X25ML10T15 1610.472      2520.000      0        "Chip Resistor, 10 KOhm, +/- 1%, 01 W, -55 to 155 degC, 0603 (1608 Metric)" 
+R1            "Resistor 10k +/-1% 0603 100 mW"    TopLayer RESC1608X55X25ML10T15 1995.000      2259.528      270      "Chip Resistor, 10 KOhm, +/- 1%, 01 W, -55 to 155 degC, 0603 (1608 Metric)" 
+OPTICAL_FLOW1 PMW3901MB-TXQT                      TopLayer QFN_01MB-TXQT_PIX     1900.590      2062.500      180      "No Description Available"                                                  
+C11           "Capacitor 10µF +/-20% 10V 0603"    TopLayer CAPC0603(1608)100_L   1790.000      2752.559      270      "Chip Capacitor, 10µF +/-20%, 10V, 0603, Thickness 1 mm"                    
+C10           "Capacitor 10µF +/-20% 10V 0603"    TopLayer CAPC0603(1608)100_L   1555.000      2740.000      180      "Chip Capacitor, 10µF +/-20%, 10V, 0603, Thickness 1 mm"                    
+C9            "Capacitor 100 nF +/-10% 50 V 0603" TopLayer CAPC1608X90X40NL10T20 2115.000      2200.394      90       "Chip Capacitor, 100 nF, +/- 10%, 50 V, 0603 (1608 Metric)"                 
+C8            "Capacitor 4.7µF +/-20% 10V 0603"   TopLayer CAPC0603(1608)100_L   2060.000      2198.347      90       "Chip Capacitor, 4.7µF +/-20%, 10V, 0603, Thickness 1 mm"                   
+C7            "Capacitor 100 nF +/-10% 50 V 0603" TopLayer CAPC1608X90X40NL10T20 1860.000      2339.606      270      "Chip Capacitor, 100 nF, +/- 10%, 50 V, 0603 (1608 Metric)"                 
+C6            "Capacitor 4.7µF +/-20% 10V 0603"   TopLayer CAPC0603(1608)100_L   1915.000      2337.559      270      "Chip Capacitor, 4.7µF +/-20%, 10V, 0603, Thickness 1 mm"                   
+C5            "Capacitor 100 nF +/-10% 50 V 0603" TopLayer CAPC1608X90X40NL10T20 2085.000      2095.394      90       "Chip Capacitor, 100 nF, +/- 10%, 50 V, 0603 (1608 Metric)"                 
+C4            "Capacitor 10µF +/-20% 10V 0603"    TopLayer CAPC0603(1608)100_L   2140.000      2093.347      90       "Chip Capacitor, 10µF +/-20%, 10V, 0603, Thickness 1 mm"                    
+C3            "Capacitor 100 nF +/-10% 50 V 0603" TopLayer CAPC1608X90X40NL10T20 1645.000      2384.606      90       "Chip Capacitor, 100 nF, +/- 10%, 50 V, 0603 (1608 Metric)"                 
+C2            "Capacitor 100 nF +/-10% 50 V 0603" TopLayer CAPC1608X90X40NL10T20 2060.000      1974.606      270      "Chip Capacitor, 100 nF, +/- 10%, 50 V, 0603 (1608 Metric)"                 
+C1            "Capacitor 10µF +/-20% 10V 0603"    TopLayer CAPC0603(1608)100_L   2115.000      1977.559      270      "Chip Capacitor, 10µF +/-20%, 10V, 0603, Thickness 1 mm"                    

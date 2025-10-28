@@ -1,0 +1,21 @@
+Altium Designer Pick and Place Locations
+C:\Users\Public\Documents\Altium\Drone ToF\Project Outputs for Drone ToF\Pick Place\Pick Place for ToFDaughters_breakoff_small.csv
+
+========================================================================================================================
+File Design Information:
+
+Date:       28/10/25
+Time:       13:06
+Revision:   796f3cc286b3fbcba934c3e58ed8cb1262a98ce3
+Variant:    No variations
+Units used: mil
+
+"Designator","Comment","Layer","Footprint","Center-X(mil)","Center-Y(mil)","Rotation","Description"
+"R4","Resistor 10k +/-1% 0603 100 mW","TopLayer","RESC1608X55X25ML10T15","1496.063","1429.134","90","Chip Resistor, 10 KOhm, +/- 1%, 01 W, -55 to 155 degC, 0603 (1608 Metric)"
+"J6","240-004","TopLayer","HDRV6W64P0X254_1X6_1524X254X909P","1326.732","1573.858","180","Connector"
+"IC5","VL53L1CXV0FY_1","TopLayer","VL53L1CXV0FY1","1336.732","1423.858","0","Integrated Circuit"
+"C6","Capacitor 100 nF +/-10% 50 V 0603","TopLayer","CAPC1608X90X40NL10T20","1186.732","1453.858","90","Chip Capacitor, 100 nF, +/- 10%, 50 V, 0603 (1608 Metric)"
+"R5","Resistor 10k +/-1% 0603 100 mW","TopLayer","RESC1608X55X25ML10T15","1145.669","1204.724","270","Chip Resistor, 10 KOhm, +/- 1%, 01 W, -55 to 155 degC, 0603 (1608 Metric)"
+"J8","240-004","TopLayer","HDRV6W64P0X254_1X6_1524X254X909P","1315.000","1060.000","0","Connector"
+"IC6","VL53L1CXV0FY_1","TopLayer","VL53L1CXV0FY1","1305.000","1210.000","180","Integrated Circuit"
+"C7","Capacitor 100 nF +/-10% 50 V 0603","TopLayer","CAPC1608X90X40NL10T20","1455.000","1180.000","270","Chip Capacitor, 100 nF, +/- 10%, 50 V, 0603 (1608 Metric)"

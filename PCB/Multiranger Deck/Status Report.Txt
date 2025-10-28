@@ -1,0 +1,10 @@
+Output: Daughter
+Type  : ExportSTEP
+From  : Variant [[No Variations]] of PCB Document [ToFDaughters_breakoff_small.PcbDoc]
+   Generated File[ToFDaughters_breakoff_small.step]
+
+
+Files Generated   : 1
+Documents Printed : 0
+
+Finished Output Generation At 1:06:51 PM On 28/10/2025
